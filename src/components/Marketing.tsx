@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import SystemMap3D from '@/components/SystemMap3D';
 import { ImmersiveModules } from '@/components/ImmersiveModules';
+import { HeroExperience } from '@/components/HeroExperience';
 
 const connectors = ['WhatsApp', 'Instagram', 'Messenger', 'Gmail', 'Outlook', 'Calendar', 'Calendly', 'Shopify', 'WooCommerce', 'Stripe', 'Razorpay', 'HubSpot', 'Salesforce', 'Zoho', 'Drive', 'Website'];
 const loop = [
@@ -13,7 +13,6 @@ const loop = [
   ['04', 'ACT', 'Calendar, CRM, commerce and messaging move together.'],
   ['05', 'CONFIRM', 'The customer gets a human-quality response.'],
 ];
-const heroLetters = 'WE HANDLE IT.'.split('').map((char, index) => ({ char: char === ' ' ? '\u00a0' : char, index }));
 
 export function Marketing() {
   const [activeNode, setActiveNode] = useState(0);
@@ -31,29 +30,7 @@ export function Marketing() {
         <div className="navactions"><Link href="/login" className="navlink">Log in</Link><Link href="/signup" className="btn dark magnetic" data-magnetic="125">Start free<span className="btn-arrow">↗</span></Link></div>
       </nav>
 
-      <section className="hero ultra-hero">
-        <div className="hero-grid-lines" aria-hidden="true" />
-        <div className="container hero-layout">
-          <div className="hero-copy" data-reveal>
-            <div className="eyebrow reveal-line">BUSINESS OPERATING SYSTEM / 2026</div>
-            <h1 className="display kinetic-hero" aria-label="WE HANDLE IT.">{heroLetters.map(({ char, index }) => <span key={index} className={'kinetic-letter ' + (char === 'H' || char === 'A' ? 'serif-letter' : '')}>{char}</span>)}</h1>
-            <p className="hero-sub text-highlight">Connect conversations, knowledge, workflows and the tools behind your business. HANDLE turns repetitive work into a system that keeps moving.</p>
-            <div className="hero-actions"><Link href="/signup" className="btn dark magnetic liquid-button" data-magnetic="130">START FREE <span>↗</span></Link><a href="#loop" className="btn ghost magnetic" data-magnetic="95">SEE THE LOOP <span>↓</span></a></div>
-            <div className="hero-proof"><span className="proof-dot" /> Demo-ready. Human approval stays built in.</div>
-            <div className="hero-rail-copy"><span>01</span><span>OPERATE</span><i /></div>
-          </div>
-
-          <div className="hero-stage" data-depth="-18" data-scroll-scale>
-            <div className="stage-hud top"><span>HANDLE LOOP</span><span>LIVE SYSTEM MAP · 16 CONNECTIONS</span></div>
-            <SystemMap3D activeIndex={activeNode} />
-            <div className="stage-card stage-card-a"><span className="eyebrow">CUSTOMER</span><strong>“Can you book me tomorrow?”</strong><small><i /> intent detected</small></div>
-            <div className="stage-card stage-card-b"><span className="eyebrow">ACTION</span><strong>Calendar → 4:30 PM</strong><small>business rule cleared</small></div>
-            <div className="stage-card stage-card-c"><span className="eyebrow">SYSTEM HEALTH</span><strong>Everything connected.</strong><small>knowledge · inbox · CRM</small></div>
-            <div className="stage-hud bottom"><span>INPUT</span><i /> <span>UNDERSTAND</span><i /> <span>ACT</span><i /> <span>CONFIRM</span></div>
-          </div>
-        </div>
-        <div className="hero-marquee"><div className="marquee-track">HANDLE IT. · HANDLE IT. · HANDLE IT. · HANDLE IT. · HANDLE IT. · </div></div>
-      </section>
+      <HeroExperience />
 
       <section id="system" className="section section-dark system-section"><div className="container"><div className="section-head split-head" data-reveal><div><div className="eyebrow">THE BUSINESS OS</div><h2 className="section-title">TOO MANY<br/><span className="serif">SYSTEMS.</span></h2></div><p className="lead-copy">Your customer journey is already one thing. Your software just broke it into pieces. HANDLE restores the operating layer between the pieces.</p></div><div className="system-bento" data-reveal><div className="bento-large bento-dark"><div className="bento-top"><span>OPERATING LAYER</span><span>01 / 05</span></div><div className="bento-giant">CONVERSATION<br/><span>→</span> ACTION</div><div className="bento-wire"><div /><div /><div /></div></div><div className="bento-small bento-dark hover-lift"><span className="eyebrow">CONTEXT</span><strong>One memory.</strong><p>Policies, prices, products, FAQs and customer history live together.</p></div><div className="bento-small bento-acid hover-lift"><span className="eyebrow">CONTROL</span><strong>Human in the loop.</strong><p>Approve, pause or take over when a decision matters.</p></div></div></div></section>
 
