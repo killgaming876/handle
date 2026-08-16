@@ -13,6 +13,7 @@ type SeekState = { targetTime: number; requested: boolean };
 
 function drawCover(context: CanvasRenderingContext2D, video: HTMLVideoElement, width: number, height: number): void {
   if (!video.videoWidth || !video.videoHeight || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+
   const videoAspect = video.videoWidth / video.videoHeight;
   const canvasAspect = width / height;
   let sourceWidth = video.videoWidth;
@@ -34,18 +35,20 @@ function drawCover(context: CanvasRenderingContext2D, video: HTMLVideoElement, w
 
 function MagneticLink({ href, children, primary = false }: { href: string; children: React.ReactNode; primary?: boolean }) {
   const ref = useRef<HTMLAnchorElement>(null);
+
   return (
     <Link
       ref={ref}
       href={href}
-      className={`cyber-hero-btn ${primary ? 'cyber-hero-btn-primary' : 'cyber-hero-btn-secondary'}`}
+      className={`cyber-fixed-btn ${primary ? 'cyber-fixed-btn-primary' : 'cyber-fixed-btn-secondary'}`}
       onPointerMove={(event) => {
+        if (window.matchMedia('(pointer: coarse)').matches) return;
         const node = ref.current;
-        if (!node || window.matchMedia('(pointer: coarse)').matches) return;
+        if (!node) return;
         const rect = node.getBoundingClientRect();
         const x = event.clientX - (rect.left + rect.width / 2);
         const y = event.clientY - (rect.top + rect.height / 2);
-        gsap.to(node, { x: x * 0.18, y: y * 0.18, duration: 0.3, ease: 'power3.out', overwrite: true });
+        gsap.to(node, { x: x * 0.18, y: y * 0.18, duration: 0.28, ease: 'power3.out', overwrite: true });
         node.style.setProperty('--mx', `${event.clientX - rect.left}px`);
         node.style.setProperty('--my', `${event.clientY - rect.top}px`);
       }}
@@ -87,9 +90,9 @@ export function VideoScrollHero() {
     video.muted = true;
     video.loop = false;
     video.crossOrigin = 'anonymous';
-    video.setAttribute('aria-hidden', 'true');
     video.src = VIDEO_SRC;
-    video.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:-100px;top:-100px;';
+    video.setAttribute('aria-hidden', 'true');
+    video.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
     document.body.appendChild(video);
 
     let duration = 10;
@@ -118,11 +121,11 @@ export function VideoScrollHero() {
 
     const paint = () => drawCover(context, video, viewport.clientWidth, viewport.clientHeight);
 
-    const seekLatest = () => {
+    const requestLatestSeek = () => {
       if (!mounted) return;
       const target = seekRef.current.targetTime;
       if (!Number.isFinite(target)) return;
-      if (Math.abs(video.currentTime - target) < 1 / SCRUB_FPS / 2) {
+      if (Math.abs(video.currentTime - target) <= 1 / SCRUB_FPS / 2) {
         seekRef.current.requested = false;
         paint();
         return;
@@ -148,19 +151,20 @@ export function VideoScrollHero() {
       resizeCanvas();
       setReady(true);
       setError(false);
-      seekLatest();
+      requestLatestSeek();
     };
 
     const onSeeked = () => {
+      if (!mounted) return;
       seekRef.current.requested = false;
       paint();
-      seekLatest();
+      if (Math.abs(video.currentTime - seekRef.current.targetTime) > 1 / SCRUB_FPS) requestLatestSeek();
     };
 
     const onVideoError = () => {
       if (!mounted) return;
-      setError(true);
       setReady(false);
+      setError(true);
     };
 
     video.addEventListener('loadedmetadata', onLoadedMetadata);
@@ -170,26 +174,7 @@ export function VideoScrollHero() {
     resizeCanvas();
 
     const ctx = gsap.context(() => {
-      const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      intro.fromTo('[data-cyber-copy]', { y: 34, opacity: 0, filter: 'blur(12px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.9, stagger: 0.09 });
-      intro.fromTo('[data-cyber-card]', { y: 50, opacity: 0, scale: 0.94, rotateX: 12 }, { y: 0, opacity: 1, scale: 1, rotateX: 0, duration: 1, stagger: 0.1 }, '-=0.6');
-
-      gsap.to('[data-cyber-title]', {
-        scale: 0.68,
-        x: '-13vw',
-        y: '-13vh',
-        opacity: 0.2,
-        ease: 'power2.out',
-        scrollTrigger: { trigger: track, start: 'top top', end: '+=125%', scrub: 1 },
-      });
-
-      gsap.to('[data-cyber-copy-cluster]', {
-        yPercent: -10,
-        ease: 'none',
-        scrollTrigger: { trigger: track, start: 'top top', end: '+=180%', scrub: 1.1 },
-      });
-
-      const matrix = gsap.timeline({
+      const master = gsap.timeline({
         scrollTrigger: {
           trigger: track,
           start: 'top top',
@@ -203,28 +188,63 @@ export function VideoScrollHero() {
             setProgress(p);
             const frame = Math.round(p * (frameCount - 1));
             seekRef.current.targetTime = Math.min(duration, Math.max(0, frame / SCRUB_FPS));
-            seekLatest();
+            requestLatestSeek();
           },
         },
       });
 
-      matrix.fromTo('[data-cyber-card="1"]', { y: 80, z: -80, opacity: 0.1, filter: 'blur(14px)', scale: 0.93 }, { y: -6, z: 90, opacity: 1, filter: 'blur(0px)', scale: 1, rotateY: -5, duration: 1 / 3, ease: 'power2.out' }, 0);
-      matrix.to('[data-cyber-card="1"]', { y: -44, z: -70, opacity: 0.34, filter: 'blur(2px)', scale: 0.96, duration: 1 / 3, ease: 'power2.inOut' }, 1 / 3);
-      matrix.fromTo('[data-cyber-card="2"]', { y: 120, z: -120, opacity: 0.1, filter: 'blur(14px)', scale: 0.92 }, { y: 0, z: 110, opacity: 1, filter: 'blur(0px)', scale: 1, rotateY: 4, duration: 1 / 3, ease: 'power2.out' }, 1 / 3);
-      matrix.to('[data-cyber-card="2"]', { y: -48, z: -80, opacity: 0.34, filter: 'blur(2px)', scale: 0.96, duration: 1 / 3, ease: 'power2.inOut' }, 2 / 3);
-      matrix.fromTo('[data-cyber-card="3"]', { y: 130, z: -140, opacity: 0.1, filter: 'blur(14px)', scale: 0.92 }, { y: 0, z: 120, opacity: 1, filter: 'blur(0px)', scale: 1, rotateY: -4, duration: 1 / 3, ease: 'power2.out' }, 2 / 3);
+      master.fromTo('[data-fixed-copy]',
+        { y: 34, opacity: 0, filter: 'blur(10px)' },
+        { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.18, stagger: 0.035, ease: 'power3.out' },
+        0,
+      );
+
+      master.fromTo('[data-fixed-title]',
+        { scale: 1.06 },
+        { scale: 0.88, x: '-5vw', y: '-8vh', opacity: 0.42, transformOrigin: 'left top', ease: 'power2.out', duration: 0.3 },
+        0.18,
+      );
+
+      master.fromTo('[data-fixed-card="1"]',
+        { y: 44, scale: 0.94, opacity: 0, filter: 'blur(14px)' },
+        { y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.18, ease: 'power3.out' },
+        0.02,
+      );
+      master.to('[data-fixed-card="1"]',
+        { y: -12, scale: 0.93, opacity: 0.34, filter: 'blur(2px)', duration: 0.13, ease: 'power2.inOut' },
+        0.28,
+      );
+
+      master.fromTo('[data-fixed-card="2"]',
+        { y: 44, scale: 0.94, opacity: 0, filter: 'blur(14px)' },
+        { y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.18, ease: 'power3.out' },
+        0.36,
+      );
+      master.to('[data-fixed-card="2"]',
+        { y: -12, scale: 0.93, opacity: 0.34, filter: 'blur(2px)', duration: 0.13, ease: 'power2.inOut' },
+        0.66,
+      );
+
+      master.fromTo('[data-fixed-card="3"]',
+        { y: 44, scale: 0.94, opacity: 0, filter: 'blur(14px)' },
+        { y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.18, ease: 'power3.out' },
+        0.72,
+      );
+
+      master.fromTo('[data-fixed-login]',
+        { opacity: 0, y: 18, scale: 0.96 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.22, ease: 'power3.out' },
+        0.42,
+      );
     }, track);
 
-    const handleResize = () => scheduleResize();
-    window.addEventListener('resize', handleResize, { passive: true });
+    const onResize = () => scheduleResize();
+    window.addEventListener('resize', onResize, { passive: true });
 
     return () => {
       mounted = false;
       ctx.revert();
-      ScrollTrigger.getAll().forEach((trigger) => {
-        if (trigger.vars.trigger === track || trigger.vars.trigger === viewport) trigger.kill();
-      });
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', onResize);
       if (resizeRef.current !== null) {
         cancelAnimationFrame(resizeRef.current);
         resizeRef.current = null;
@@ -241,66 +261,72 @@ export function VideoScrollHero() {
   }, []);
 
   return (
-    <section ref={trackRef} className="cyber-hero-track">
-      <div ref={viewportRef} className="cyber-hero-viewport">
-        <canvas ref={canvasRef} className="cyber-hero-canvas" aria-hidden="true" />
-        <div className="cyber-hero-vignette" />
-        <div className="cyber-hero-grid" />
-        <div className="cyber-hero-noise" />
-        <div className="cyber-hero-ui">
-          <div className="cyber-hero-copy-cluster" data-cyber-copy-cluster>
-            <div className="cyber-hero-eyebrow" data-cyber-copy>HANDLE / DIGITAL OPERATING SYSTEM</div>
-            <h1 className="cyber-hero-title" data-cyber-copy data-cyber-title>
-              WE <span>HANDLE</span><br />IT.
-            </h1>
-            <p className="cyber-hero-sub" data-cyber-copy>Connect conversations, knowledge, workflows and the repetitive work that keeps your business busy.</p>
-            <div className="cyber-hero-actions" data-cyber-copy>
+    <section ref={trackRef} className="cyber-fixed-track">
+      <div ref={viewportRef} className="cyber-fixed-viewport">
+        <canvas ref={canvasRef} className="cyber-fixed-canvas" aria-hidden="true" />
+        <div className="cyber-fixed-vignette" aria-hidden="true" />
+        <div className="cyber-fixed-grid" aria-hidden="true" />
+
+        <header className="cyber-fixed-nav">
+          <Link href="/" className="cyber-fixed-brand">HANDLE<span>◼</span></Link>
+          <nav className="cyber-fixed-links" aria-label="Primary navigation">
+            <a href="#system">Product</a>
+            <a href="#loop">How it works</a>
+            <a href="#connections">Integrations</a>
+            <a href="#pricing">Pricing</a>
+          </nav>
+          <div className="cyber-fixed-nav-actions">
+            <button type="button" className="cyber-fixed-login" onClick={() => setLoginOpen(true)}>
+              <span>LOG IN</span><span>ACCESS</span>
+            </button>
+            <MagneticLink href="/signup" primary>START FREE ↗</MagneticLink>
+          </div>
+        </header>
+
+        <div className="cyber-fixed-bg-word" aria-hidden="true">WE HANDLE</div>
+
+        <div className="cyber-fixed-content">
+          <div className="cyber-fixed-left">
+            <div className="cyber-fixed-eyebrow" data-fixed-copy>HANDLE / DIGITAL OPERATING SYSTEM</div>
+            <h1 className="cyber-fixed-title" data-fixed-copy data-fixed-title>WE <span>HANDLE</span><br />IT.</h1>
+            <p className="cyber-fixed-sub" data-fixed-copy>Connect conversations, knowledge, workflows and the repetitive work that keeps your business busy.</p>
+            <div className="cyber-fixed-actions" data-fixed-copy>
               <MagneticLink href="/signup" primary>START FREE ↗</MagneticLink>
-              <a className="cyber-hero-btn cyber-hero-btn-secondary" href="#loop">SEE THE LOOP ↓</a>
+              <a className="cyber-fixed-btn cyber-fixed-btn-secondary" href="#loop"><span>SEE THE LOOP ↓</span></a>
             </div>
-            <div className="cyber-hero-status" data-cyber-copy><span /> {ready ? 'VIDEO MATRIX ONLINE' : error ? 'VIDEO ASSET OFFLINE' : 'LOADING VIDEO MATRIX'}</div>
+            <div className="cyber-fixed-status" data-fixed-copy><span /> {ready ? 'VIDEO MATRIX ONLINE' : error ? 'VIDEO ASSET OFFLINE' : 'LOADING VIDEO MATRIX'}</div>
           </div>
 
-          <div className="cyber-card-stack">
-            <article className="cyber-card" data-cyber-card="1"><span>01 / CUSTOMER</span><strong>Conversations enter the operating layer.</strong><small>WhatsApp · Instagram · Gmail</small><i /></article>
-            <article className="cyber-card" data-cyber-card="2"><span>02 / KNOWLEDGE</span><strong>Business memory becomes instantly usable.</strong><small>Policies · products · customer history</small><i /></article>
-            <article className="cyber-card" data-cyber-card="3"><span>03 / DECISION</span><strong>Rules turn intent into the right next move.</strong><small>Confidence · approval · execution</small><i /></article>
+          <div className="cyber-fixed-right" aria-label="HANDLE operating pipeline">
+            <article className="cyber-fixed-card" data-fixed-card="1">
+              <div><span>01 / CUSTOMER</span><strong>Conversations enter the operating layer.</strong><small>WhatsApp · Instagram · Gmail</small></div><i />
+            </article>
+            <article className="cyber-fixed-card" data-fixed-card="2">
+              <div><span>02 / KNOWLEDGE</span><strong>Business memory becomes instantly usable.</strong><small>Policies · products · customer history</small></div><i />
+            </article>
+            <article className="cyber-fixed-card" data-fixed-card="3">
+              <div><span>03 / DECISION</span><strong>Rules turn intent into the right next move.</strong><small>Confidence · approval · execution</small></div><i />
+            </article>
+            <div className="cyber-fixed-pipeline" data-fixed-login><span /> <b /> <span /> <b /> <span /></div>
           </div>
-
-          <div className="cyber-hero-progress">{String(Math.round(progress * 100)).padStart(2, '0')}% <span /> SCROLL MATRIX</div>
-          <div className="cyber-hero-scanline" />
         </div>
 
+        <div className="cyber-fixed-readout"><span>{String(Math.round(progress * 100)).padStart(2, '0')}%</span> SCROLL MATRIX <i /></div>
+
         {loginOpen && (
-          <div className="cyber-login-backdrop" role="dialog" aria-modal="true" aria-label="HANDLE login" onMouseDown={(event) => { if (event.target === event.currentTarget) setLoginOpen(false); }}>
-            <div className="cyber-login-modal">
-              <button className="cyber-login-close" type="button" onClick={() => setLoginOpen(false)} aria-label="Close login">×</button>
-              <span className="cyber-hero-eyebrow">HANDLE / SECURE ACCESS</span>
-              <h2>ENTER<br /><em>THE SYSTEM.</em></h2>
+          <div className="cyber-fixed-modal" role="dialog" aria-modal="true" aria-label="HANDLE login" onMouseDown={(event) => { if (event.target === event.currentTarget) setLoginOpen(false); }}>
+            <div className="cyber-fixed-modal-card">
+              <button type="button" className="cyber-fixed-modal-close" onClick={() => setLoginOpen(false)} aria-label="Close login">×</button>
+              <span className="cyber-fixed-eyebrow">HANDLE / SECURE ACCESS</span>
+              <h2>ENTER <em>THE SYSTEM.</em></h2>
               <p>Sign in to your operating workspace.</p>
-              <button className="cyber-login-primary" type="button">CONTINUE WITH GOOGLE</button>
-              <div className="cyber-login-or"><span /> OR <span /></div>
-              <input className="cyber-login-input" type="email" placeholder="you@business.com" aria-label="Email address" />
-              <button className="cyber-login-primary" type="button">CONTINUE ↗</button>
+              <button type="button" className="cyber-fixed-modal-btn">CONTINUE WITH GOOGLE</button>
+              <div className="cyber-fixed-or"><span /> OR <span /></div>
+              <input className="cyber-fixed-input" type="email" placeholder="you@business.com" aria-label="Email address" />
+              <button type="button" className="cyber-fixed-modal-btn">CONTINUE ↗</button>
             </div>
           </div>
         )}
-      </div>
-
-      <div className="cyber-hero-nav">
-        <Link href="/" className="cyber-brand">HANDLE<span>◼</span></Link>
-        <div className="cyber-nav-links">
-          <a href="#system">Product</a>
-          <a href="#loop">How it works</a>
-          <a href="#connections">Integrations</a>
-          <a href="#pricing">Pricing</a>
-        </div>
-        <div className="cyber-nav-actions">
-          <button className="cyber-login-trigger" type="button" onClick={() => setLoginOpen(true)}>
-            <span>LOG IN</span><span aria-hidden="true">ACCESS</span>
-          </button>
-          <MagneticLink href="/signup" primary>START FREE ↗</MagneticLink>
-        </div>
       </div>
     </section>
   );
