@@ -10,9 +10,13 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function ScrollRuntime() {
   useEffect(() => {
-    const setScroll = useMotionStore.getState().setScroll;
-    const setPointer = useMotionStore.getState().setPointer;
+    const motion = useMotionStore.getState();
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+    const cores = navigator.hardwareConcurrency ?? 8;
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
+    const quality = reduce || memory <= 4 || cores <= 4 ? 'medium' : coarse ? 'high' : memory >= 12 && cores >= 8 ? 'ultra' : 'high';
+    motion.setQuality(quality);
 
     const lenis = new Lenis({
       duration: reduce ? 0.01 : 1.05,
@@ -28,12 +32,15 @@ export default function ScrollRuntime() {
     const onScroll = ({ scroll, velocity, direction }: { scroll: number; limit: number; velocity: number; direction: number }) => {
       const nextDirection = Math.abs(velocity) < 0.015 ? 'idle' : direction >= 0 ? 'down' : 'up';
       const progress = Math.max(0, Math.min(1, scroll / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)));
-      setScroll(progress, velocity, nextDirection);
+      motion.setScroll(progress, velocity, nextDirection);
+      document.documentElement.style.setProperty('--scroll-progress', progress.toFixed(5));
+      document.documentElement.style.setProperty('--scroll-velocity', Math.min(1, Math.abs(velocity) / 2.2).toFixed(5));
+      document.documentElement.style.setProperty('--scroll-direction', nextDirection);
       lastScroll = scroll;
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      setPointer(event.clientX / Math.max(1, window.innerWidth), event.clientY / Math.max(1, window.innerHeight));
+      motion.setPointer(event.clientX / Math.max(1, window.innerWidth), event.clientY / Math.max(1, window.innerHeight));
     };
 
     lenis.on('scroll', onScroll);
@@ -47,7 +54,10 @@ export default function ScrollRuntime() {
 
       if (delta > 48) {
         const velocity = (lenis.scroll - lastScroll) / Math.max(0.016, delta / 1000);
-        setScroll(Math.max(0, Math.min(1, lenis.scroll / Math.max(1, document.documentElement.scrollHeight - window.innerHeight))), velocity, velocity >= 0 ? 'down' : 'up');
+        const progress = Math.max(0, Math.min(1, lenis.scroll / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)));
+        motion.setScroll(progress, velocity, velocity >= 0 ? 'down' : 'up');
+        document.documentElement.style.setProperty('--scroll-progress', progress.toFixed(5));
+        document.documentElement.style.setProperty('--scroll-velocity', Math.min(1, Math.abs(velocity) / 2.2).toFixed(5));
       }
     };
 
@@ -67,6 +77,9 @@ export default function ScrollRuntime() {
       window.removeEventListener('resize', refresh);
       window.removeEventListener('orientationchange', refresh);
       lenis.destroy();
+      document.documentElement.style.removeProperty('--scroll-progress');
+      document.documentElement.style.removeProperty('--scroll-velocity');
+      document.documentElement.style.removeProperty('--scroll-direction');
     };
   }, []);
 
