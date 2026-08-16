@@ -28,6 +28,7 @@ export default function ScrollRuntime() {
 
     let lastScroll = lenis.scroll;
     let lastTime = performance.now();
+    const triggers: ScrollTrigger[] = [];
 
     const onScroll = ({ scroll, velocity, direction }: { scroll: number; limit: number; velocity: number; direction: number }) => {
       const nextDirection = Math.abs(velocity) < 0.015 ? 'idle' : direction >= 0 ? 'down' : 'up';
@@ -64,6 +65,20 @@ export default function ScrollRuntime() {
     gsap.ticker.add(ticker);
     gsap.ticker.lagSmoothing(1000, 16);
 
+    const sectionNodes = gsap.utils.toArray<HTMLElement>('[data-section]');
+    sectionNodes.forEach((section) => {
+      const name = section.dataset.section ?? 'unknown';
+      const trigger = ScrollTrigger.create({
+        trigger: section,
+        start: 'top 68%',
+        end: 'bottom 32%',
+        onEnter: (self) => motion.setSection(name, self.progress),
+        onEnterBack: (self) => motion.setSection(name, self.progress),
+        onUpdate: (self) => motion.setSection(name, self.progress),
+      });
+      triggers.push(trigger);
+    });
+
     const refresh = () => ScrollTrigger.refresh();
     window.addEventListener('resize', refresh, { passive: true });
     window.addEventListener('orientationchange', refresh, { passive: true });
@@ -72,6 +87,7 @@ export default function ScrollRuntime() {
 
     return () => {
       window.clearTimeout(idleRefresh);
+      triggers.forEach((trigger) => trigger.kill());
       gsap.ticker.remove(ticker);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('resize', refresh);
