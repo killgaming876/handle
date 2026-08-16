@@ -8,17 +8,16 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
-gsap.registerPlugin(ScrollTrigger);
-
 const cards = [
-  { id: '01', label: 'CUSTOMER', title: 'Can you book me tomorrow?', meta: 'intent detected', tone: '#dfff91' },
-  { id: '02', label: 'ACTION', title: 'Calendar → 4:30 PM', meta: 'business rule cleared', tone: '#f4f1e8' },
-  { id: '03', label: 'SYSTEM HEALTH', title: 'Everything connected.', meta: '16 systems online', tone: '#baff72' },
+  { id: '01', label: 'CUSTOMER', title: 'Can you book me tomorrow?', meta: 'intent detected' },
+  { id: '02', label: 'ACTION', title: 'Calendar → 4:30 PM', meta: 'business rule cleared' },
+  { id: '03', label: 'SYSTEM HEALTH', title: 'Everything connected.', meta: '16 systems online' },
 ];
 
 function AuroraScene({ pointer }: { pointer: { x: number; y: number } }) {
   const group = useRef<THREE.Group>(null);
   const stars = useRef<THREE.Points>(null);
+  const shader = useRef<THREE.ShaderMaterial>(null);
   const { viewport } = useThree();
   const positions = useMemo(() => {
     const values = new Float32Array(1000 * 3);
@@ -33,6 +32,7 @@ function AuroraScene({ pointer }: { pointer: { x: number; y: number } }) {
   }, []);
 
   useFrame((state, delta) => {
+    if (shader.current) shader.current.uniforms.uTime.value = state.clock.elapsedTime;
     if (group.current) {
       group.current.rotation.y += delta * 0.018;
       group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, pointer.y * 0.07, 3.5, delta);
@@ -48,13 +48,14 @@ function AuroraScene({ pointer }: { pointer: { x: number; y: number } }) {
   return (
     <group ref={group}>
       <mesh position={[0, 0, -2.6]} scale={[5.4, 3.7, 1]}>
-        <planeGeometry args={[2.2, 2.2, 1, 1]} />
+        <planeGeometry args={[2.2, 2.2]} />
         <shaderMaterial
+          ref={shader}
           transparent
           depthWrite={false}
-          uniforms={{ uTime: { value: 0 }, uPointer: { value: new THREE.Vector2() } }}
+          uniforms={{ uTime: { value: 0 } }}
           vertexShader={`varying vec2 vUv; void main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`}
-          fragmentShader={`varying vec2 vUv; uniform float uTime; uniform vec2 uPointer; void main(){ vec2 p=vUv-.5; float d=length(p); float flow=sin((p.x+p.y)*7.0+uTime*.55)+sin((p.x*1.7-p.y*.8)*6.0-uTime*.35); float glow=smoothstep(.85,.05,d)*.22; vec3 a=vec3(.15,.22,.08); vec3 b=vec3(.03,.05,.03); vec3 c=vec3(.42,.6,.16); float mixv=(flow+2.0)/4.0; vec3 col=mix(b,a,mixv)+c*glow; gl_FragColor=vec4(col,.95);}`}
+          fragmentShader={`varying vec2 vUv; uniform float uTime; void main(){ vec2 p=vUv-.5; float d=length(p); float flow=sin((p.x+p.y)*7.0+uTime*.55)+sin((p.x*1.7-p.y*.8)*6.0-uTime*.35); float glow=smoothstep(.85,.05,d)*.22; vec3 a=vec3(.15,.22,.08); vec3 b=vec3(.03,.05,.03); vec3 c=vec3(.42,.6,.16); float mixv=(flow+2.0)/4.0; vec3 col=mix(b,a,mixv)+c*glow; gl_FragColor=vec4(col,.95);}`}
         />
       </mesh>
       <points ref={stars} position={[0, 0, -1.8]}>
@@ -80,7 +81,6 @@ function AuroraScene({ pointer }: { pointer: { x: number; y: number } }) {
 
 function CircuitLine({ progress }: { progress: number }) {
   const path = 'M 0 74 C 70 74, 70 152, 140 152 S 220 230, 300 230';
-  const length = 420;
   return (
     <svg className="hero-circuit" viewBox="0 0 300 300" preserveAspectRatio="none" aria-hidden="true">
       <path d={path} fill="none" stroke="rgba(223,255,145,.13)" strokeWidth="1.2" />
@@ -93,27 +93,25 @@ function CircuitLine({ progress }: { progress: number }) {
 export function HeroExperience() {
   const sectionRef = useRef<HTMLElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
-  const rightRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
     const section = sectionRef.current;
     const left = leftRef.current;
-    const right = rightRef.current;
     const heading = headingRef.current;
-    if (!section || !left || !right || !heading) return;
+    if (!section || !left || !heading) return;
 
     const letters = heading.querySelectorAll<HTMLElement>('[data-letter]');
     const copy = left.querySelectorAll<HTMLElement>('[data-hero-stagger]');
-
     const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
     intro.fromTo(letters, { yPercent: 110, rotateX: -75, opacity: 0 }, { yPercent: 0, rotateX: 0, opacity: 1, duration: 1.05, stagger: 0.045 });
     intro.fromTo(copy, { y: 28, opacity: 0, filter: 'blur(10px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.72, stagger: 0.12 }, '-=0.58');
 
     const ctx = gsap.context(() => {
-      const timeline = gsap.timeline({
+      gsap.timeline({
         scrollTrigger: {
           trigger: section,
           start: 'top top',
@@ -124,19 +122,17 @@ export function HeroExperience() {
           invalidateOnRefresh: true,
           onUpdate: (self) => setPhase(self.progress),
         },
-      });
-
-      timeline.to(letters, { x: -28, scale: 0.82, opacity: 0.35, transformOrigin: 'left center', stagger: 0.018 }, 0.16);
-      timeline.to(left, { yPercent: -7, opacity: 0.92 }, 0.18);
-      timeline.to('.hero-card-customer', { y: -28, scale: 1.04, opacity: 1, filter: 'blur(0px)' }, 0.06);
-      timeline.to('.hero-circuit-wrap', { opacity: 1 }, 0.24);
-      timeline.to('.hero-circuit-wrap', { '--circuit-progress': 1 }, 0.28);
-      timeline.to('.hero-card-action', { z: 30, y: -8, scale: 1.03, opacity: 1, filter: 'blur(0px)' }, 0.42);
-      timeline.to('.hero-card-customer', { z: -60, y: -8, scale: 0.93, opacity: 0.58 }, 0.48);
-      timeline.to('.hero-card-health', { z: 30, y: -4, scale: 1.02, opacity: 1, filter: 'blur(0px)' }, 0.7);
-      timeline.to('.hero-divider-bar', { scaleY: 1.8, rotate: 3, boxShadow: '0 0 34px rgba(223,255,145,.7)' }, 0.74);
-      timeline.to('.hero-footer-glow', { opacity: 1, scale: 1.22 }, 0.78);
-      timeline.to('.hero-right-hud', { opacity: 1, y: -6 }, 0.62);
+      })
+        .to(letters, { x: -28, scale: 0.82, opacity: 0.35, transformOrigin: 'left center', stagger: 0.018 }, 0.16)
+        .to(left, { yPercent: -7, opacity: 0.92 }, 0.18)
+        .to('.hero-card-customer', { y: -28, scale: 1.04, opacity: 1, filter: 'blur(0px)' }, 0.06)
+        .to('.hero-circuit-wrap', { opacity: 1 }, 0.24)
+        .to('.hero-card-action', { z: 30, y: -8, scale: 1.03, opacity: 1, filter: 'blur(0px)' }, 0.42)
+        .to('.hero-card-customer', { z: -60, y: -8, scale: 0.93, opacity: 0.58 }, 0.48)
+        .to('.hero-card-health', { z: 30, y: -4, scale: 1.02, opacity: 1, filter: 'blur(0px)' }, 0.7)
+        .to('.hero-divider-bar', { scaleY: 1.8, rotate: 3, boxShadow: '0 0 34px rgba(223,255,145,.7)' }, 0.74)
+        .to('.hero-footer-glow', { opacity: 1, scale: 1.22 }, 0.78)
+        .to('.hero-right-hud', { opacity: 1, y: -6 }, 0.62);
     }, section);
 
     return () => { intro.kill(); ctx.revert(); };
@@ -157,9 +153,7 @@ export function HeroExperience() {
         <div className="hero-pro-noise" />
         <div className="hero-pro-kicker" data-hero-stagger>BUSINESS OPERATING SYSTEM / 2026</div>
         <div className="hero-pro-left-inner">
-          <h1 ref={headingRef} className="hero-pro-title" aria-label="WE HANDLE IT.">
-            {'WE HANDLE IT.'.split('').map((char, index) => <span key={index} data-letter className={char === 'H' || char === 'A' ? 'hero-pro-serif' : ''}>{char === ' ' ? '\u00a0' : char}</span>)}
-          </h1>
+          <h1 ref={headingRef} className="hero-pro-title" aria-label="WE HANDLE IT.">{'WE HANDLE IT.'.split('').map((char, index) => <span key={index} data-letter className={char === 'H' || char === 'A' ? 'hero-pro-serif' : ''}>{char === ' ' ? '\u00a0' : char}</span>)}</h1>
           <p className="hero-pro-sub" data-hero-stagger>Connect conversations, knowledge, workflows and the tools behind your business. HANDLE turns repetitive work into a system that keeps moving.</p>
           <div className="hero-pro-actions" data-hero-stagger>
             <Link href="/signup" className="hero-pro-btn primary" onPointerMove={magnetic} onPointerLeave={magnetReset}>START FREE <span>↗</span></Link>
@@ -170,14 +164,10 @@ export function HeroExperience() {
         <div className="hero-pro-footer" data-hero-stagger><span>HANDLE / 001</span><span>SCROLL TO OPERATE</span></div>
       </div>
 
-      <div
-        className="hero-pro-right"
-        ref={rightRef}
-        onPointerMove={(event) => {
-          const rect = event.currentTarget.getBoundingClientRect();
-          setPointer({ x: ((event.clientX - rect.left) / rect.width - 0.5) * 2, y: ((event.clientY - rect.top) / rect.height - 0.5) * 2 });
-        }}
-      >
+      <div className="hero-pro-right" onPointerMove={(event) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        setPointer({ x: ((event.clientX - rect.left) / rect.width - 0.5) * 2, y: ((event.clientY - rect.top) / rect.height - 0.5) * 2 });
+      }}>
         <Canvas dpr={[1, 1.65]} camera={{ position: [0, 0, 7], fov: 46 }} gl={{ antialias: true, alpha: false }}>
           <color attach="background" args={['#080907']} />
           <ambientLight intensity={0.55} />
@@ -185,7 +175,6 @@ export function HeroExperience() {
           <pointLight position={[-3, -2, 1]} intensity={8} color="#ffffff" />
           <AuroraScene pointer={pointer} />
         </Canvas>
-
         <div className="hero-pro-vignette" />
         <div className="hero-right-hud"><span>HANDLE LOOP</span><span>LIVE SYSTEM MAP / 16 CONNECTIONS</span></div>
         <div className="hero-card hero-card-customer" style={{ transformOrigin: 'center center' }}><div className="hero-card-index">01</div><div><span>CUSTOMER</span><strong>{cards[0].title}</strong><small><i /> {cards[0].meta}</small></div></div>
@@ -195,7 +184,6 @@ export function HeroExperience() {
         <div className="hero-footer-glow" />
         <div className="hero-pro-right-footer"><span>INPUT</span><i /> <span>UNDERSTAND</span><i /> <span>ACT</span><i /> <span>CONFIRM</span></div>
       </div>
-
       <div className="hero-divider-bar" aria-hidden="true" />
     </section>
   );
