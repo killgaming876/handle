@@ -1,126 +1,92 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useState } from 'react';
+import SystemMap3D from '@/components/SystemMap3D';
 
-const connectors = ['WhatsApp','Instagram','Messenger','Gmail','Outlook','Calendar','Calendly','Shopify','WooCommerce','Stripe','Razorpay','HubSpot','Salesforce','Zoho','Google Drive','Website'];
-const demoSteps = [
-  ['UNDERSTAND', 'Intent detected: appointment request.'],
-  ['RETRIEVE', 'Booking policy + availability context loaded.'],
-  ['DECIDE', 'Tomorrow 4:30 PM matches business rules.'],
-  ['ACT', 'Calendar booking prepared in sandbox.'],
-  ['CONFIRM', 'Customer receives a clear confirmation.'],
+const connectors = ['WhatsApp', 'Instagram', 'Messenger', 'Gmail', 'Outlook', 'Calendar', 'Calendly', 'Shopify', 'WooCommerce', 'Stripe', 'Razorpay', 'HubSpot', 'Salesforce', 'Zoho', 'Drive', 'Website'];
+const loop = [
+  ['01', 'CAPTURE', 'Every conversation lands in one operating layer.'],
+  ['02', 'UNDERSTAND', 'HANDLE reads intent, context and your business rules.'],
+  ['03', 'DECIDE', 'The system selects the correct next action.'],
+  ['04', 'ACT', 'Calendar, CRM, commerce and messaging move together.'],
+  ['05', 'CONFIRM', 'The customer gets a human-quality response.'],
 ];
+const heroLetters = 'WE HANDLE IT.'.split('').map((char, index) => ({ char: char === ' ' ? '\u00a0' : char, index }));
 
 export function Marketing() {
-  const [demoMessage, setDemoMessage] = useState('Can you book me tomorrow at 4:30?');
-  const [demoRunning, setDemoRunning] = useState(false);
-  const [demoStep, setDemoStep] = useState(4);
-  const [scroll, setScroll] = useState(0);
-  const [activeConnector, setActiveConnector] = useState('WhatsApp');
-  const heroRef = useRef<HTMLDivElement>(null);
+  const [activeNode, setActiveNode] = useState(0);
+  const [demoInput, setDemoInput] = useState('Can you book me tomorrow at 4:30?');
+  const [running, setRunning] = useState(false);
+  const [step, setStep] = useState(4);
+  const [connector, setConnector] = useState('WhatsApp');
 
-  useEffect(() => {
-    const onScroll = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      setScroll(max > 0 ? Math.min(1, window.scrollY / max) : 0);
-    };
-    const onPointer = (event: PointerEvent) => {
-      const board = heroRef.current;
-      if (!board || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const rect = board.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width - 0.5;
-      const y = (event.clientY - rect.top) / rect.height - 0.5;
-      board.style.setProperty('--mx', `${x * 18}px`);
-      board.style.setProperty('--my', `${y * 14}px`);
-      board.style.setProperty('--rx', `${50 + x * 22}%`);
-      board.style.setProperty('--ry', `${50 + y * 22}%`);
-    };
-    const resetPointer = () => {
-      const board = heroRef.current;
-      if (!board) return;
-      board.style.setProperty('--mx', '0px');
-      board.style.setProperty('--my', '0px');
-      board.style.setProperty('--rx', '50%');
-      board.style.setProperty('--ry', '50%');
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('pointermove', onPointer, { passive: true });
-    window.addEventListener('pointerleave', resetPointer);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('pointermove', onPointer);
-      window.removeEventListener('pointerleave', resetPointer);
-    };
-  }, []);
-
-  useEffect(() => {
-    const onClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      const button = target?.closest<HTMLElement>('.btn, .google-button, .connection-node');
-      if (!button || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const rect = button.getBoundingClientRect();
-      button.style.setProperty('--click-x', `${event.clientX - rect.left}px`);
-      button.style.setProperty('--click-y', `${event.clientY - rect.top}px`);
-      button.classList.remove('clicked');
-      void button.offsetWidth;
-      button.classList.add('clicked');
-    };
-    document.addEventListener('click', onClick);
-    return () => document.removeEventListener('click', onClick);
-  }, []);
-
-  const activeAction = useMemo(() => demoSteps[Math.min(demoStep, demoSteps.length - 1)], [demoStep]);
-
-  function runDemo() {
-    if (demoRunning) return;
-    setDemoRunning(true);
-    setDemoStep(0);
-    let step = 0;
+  const runDemo = () => {
+    if (running) return;
+    setRunning(true);
+    setStep(0);
+    let current = 0;
     const timer = window.setInterval(() => {
-      step += 1;
-      setDemoStep(step);
-      if (step >= demoSteps.length - 1) {
+      current += 1;
+      setStep(current);
+      if (current >= loop.length - 1) {
         window.clearInterval(timer);
-        setDemoRunning(false);
+        setRunning(false);
       }
-    }, 680);
-  }
+    }, 620);
+  };
 
   return (
-    <main>
-      <div className="scroll-progress"><span style={{ transform: `scaleX(${scroll})` }} /></div>
-      <nav className="nav">
-        <Link className="wordmark" href="/">HANDLE</Link>
-        <div className="navlinks"><a className="navlink" href="#system">Product</a><a className="navlink" href="#demo">How it works</a><a className="navlink" href="#connections">Integrations</a><a className="navlink" href="#pricing">Pricing</a></div>
-        <div className="navactions"><Link className="navlink" href="/login">Log in</Link><Link className="btn dark" href="/signup">Start free</Link></div>
+    <main className="handle-site">
+      <div className="reading-rail"><span /></div>
+      <div className="aurora aurora-a" /><div className="aurora aurora-b" /><div className="noise-layer" />
+      <nav className="nav ultra-nav">
+        <Link href="/" className="wordmark magnetic" data-magnetic="85">HANDLE<span className="wordmark-dot">◼</span></Link>
+        <div className="navlinks">
+          <a href="#system" className="navlink">Product</a><a href="#loop" className="navlink">How it works</a><a href="#connections" className="navlink">Integrations</a><a href="#pricing" className="navlink">Pricing</a>
+        </div>
+        <div className="navactions"><Link href="/login" className="navlink">Log in</Link><Link href="/signup" className="btn dark magnetic" data-magnetic="125">Start free<span className="btn-arrow">↗</span></Link></div>
       </nav>
 
-      <section className="container hero">
-        <div className="hero-copy reveal-in"><div className="eyebrow hero-kicker">BUSINESS OPERATING SYSTEM / HANDLE</div><h1 className="display"><span>WE</span><span className="serif">HANDLE</span><span>IT.</span></h1><p className="hero-sub">Your customers. Your conversations. Your repetitive work. One system that connects the tools and handles the work that keeps repeating.</p><div className="hero-actions"><Link className="btn dark" href="/signup">START FREE</Link><a className="btn" href="#demo">SEE HANDLE WORK</a></div><div className="hero-proof"><span className="proof-dot"/> Demo mode available · no paid API required</div><p className="eyebrow" style={{ marginTop: 26 }}>ONE SURFACE. MANY SYSTEMS.</p></div>
-        <div ref={heroRef} className="hero-board interactive-board" aria-label="HANDLE operating surface visual"><div className="board-label">HANDLE LOOP <span>LIVE SYSTEM MAP</span></div><div className="board-core"><div className="core-ring ring-one"/><div className="core-ring ring-two"/><div className="core-word">HANDLE</div><div className="core-pulse"/></div><div className="signal signal-one"/><div className="signal signal-two"/><div className="node one"/><div className="node two"/><div className="node three"/><div className="floating-card card-a"><div className="eyebrow">CUSTOMER</div><strong>{demoMessage}</strong><div className="micro-status"><span className="status-dot"/> {activeAction[0].toLowerCase()}</div></div><div className="floating-card card-b"><div className="eyebrow">ACTION</div><strong>Calendar → 4:30 PM</strong><div className="flow"><span className="flow-node">Check</span><span className="flow-arrow">→</span><span className="flow-node">Book</span></div></div><div className="floating-card card-c"><div className="eyebrow">SYSTEM HEALTH</div><strong>Everything connected.</strong><p className="muted">Knowledge · Inbox · Calendar · CRM</p></div><div className="board-footer"><span>INPUT</span><i>→</i><span>UNDERSTAND</span><i>→</i><span>ACT</span><i>→</i><span>CONFIRM</span></div></div>
+      <section className="hero ultra-hero">
+        <div className="hero-grid-lines" aria-hidden="true" />
+        <div className="container hero-layout">
+          <div className="hero-copy" data-reveal>
+            <div className="eyebrow reveal-line">BUSINESS OPERATING SYSTEM / 2026</div>
+            <h1 className="display kinetic-hero" aria-label="WE HANDLE IT.">{heroLetters.map(({ char, index }) => <span key={index} className={'kinetic-letter ' + (char === 'H' || char === 'A' ? 'serif-letter' : '')}>{char}</span>)}</h1>
+            <p className="hero-sub text-highlight">Connect conversations, knowledge, workflows and the tools behind your business. HANDLE turns repetitive work into a system that keeps moving.</p>
+            <div className="hero-actions"><Link href="/signup" className="btn dark magnetic liquid-button" data-magnetic="130">START FREE <span>↗</span></Link><a href="#loop" className="btn ghost magnetic" data-magnetic="95">SEE THE LOOP <span>↓</span></a></div>
+            <div className="hero-proof"><span className="proof-dot" /> Demo-ready. Human approval stays built in.</div>
+            <div className="hero-rail-copy"><span>01</span><span>OPERATE</span><i /></div>
+          </div>
+
+          <div className="hero-stage" data-depth="-18" data-scroll-scale>
+            <div className="stage-hud top"><span>HANDLE LOOP</span><span>LIVE SYSTEM MAP · 16 CONNECTIONS</span></div>
+            <SystemMap3D activeIndex={activeNode} />
+            <div className="stage-card stage-card-a"><span className="eyebrow">CUSTOMER</span><strong>“Can you book me tomorrow?”</strong><small><i /> intent detected</small></div>
+            <div className="stage-card stage-card-b"><span className="eyebrow">ACTION</span><strong>Calendar → 4:30 PM</strong><small>business rule cleared</small></div>
+            <div className="stage-card stage-card-c"><span className="eyebrow">SYSTEM HEALTH</span><strong>Everything connected.</strong><small>knowledge · inbox · CRM</small></div>
+            <div className="stage-hud bottom"><span>INPUT</span><i /> <span>UNDERSTAND</span><i /> <span>ACT</span><i /> <span>CONFIRM</span></div>
+          </div>
+        </div>
+        <div className="hero-marquee"><div className="marquee-track">HANDLE IT. · HANDLE IT. · HANDLE IT. · HANDLE IT. · HANDLE IT. · </div></div>
       </section>
 
-      <section id="system" className="section section-dark"><div className="container split"><div><div className="eyebrow">THE PROBLEM</div><h2 className="section-title">TOO<br/>MANY<br/><span className="serif">TABS.</span></h2><div className="yellow-line"/></div><div><p className="lead-copy">WhatsApp, email, calendars, CRM, commerce and payments all carry pieces of the same customer journey. HANDLE turns the fragmented work into one coherent operating surface.</p><div className="tabs-grid" style={{ marginTop: 34 }}>{['WhatsApp','Email','Calendar','CRM','Shop','Payments'].map((x,i)=><div key={x} className="mini-panel dark-panel" style={{ transform: `translateY(${i%2 ? 10 : 0}px)` }}><div className="eyebrow">SEPARATE TOOL</div><h4>{x}</h4><span className="muted">Another login. Another handoff.</span></div>)}</div><h3 className="giant-line">ONE SYSTEM.</h3></div></div></section>
+      <section id="system" className="section section-dark system-section"><div className="container"><div className="section-head split-head" data-reveal><div><div className="eyebrow">THE BUSINESS OS</div><h2 className="section-title">TOO MANY<br/><span className="serif">SYSTEMS.</span></h2></div><p className="lead-copy">Your customer journey is already one thing. Your software just broke it into pieces. HANDLE restores the operating layer between the pieces.</p></div><div className="system-bento" data-reveal><div className="bento-large bento-dark"><div className="bento-top"><span>OPERATING LAYER</span><span>01 / 05</span></div><div className="bento-giant">CONVERSATION<br/><span>→</span> ACTION</div><div className="bento-wire"><div /><div /><div /></div></div><div className="bento-small bento-dark hover-lift"><span className="eyebrow">CONTEXT</span><strong>One memory.</strong><p>Policies, prices, products, FAQs and customer history live together.</p></div><div className="bento-small bento-acid hover-lift"><span className="eyebrow">CONTROL</span><strong>Human in the loop.</strong><p>Approve, pause or take over when a decision matters.</p></div></div></div></section>
 
-      <section id="demo" className="section"><div className="container"><div className="eyebrow">THE HANDLE LOOP</div><h2 className="section-title">FROM MESSAGE<br/><span className="serif">TO ACTION.</span></h2><div className="live-demo" style={{ marginTop: 44 }}><div className="demo-chat"><div className="demo-header"><div><strong>Customer simulation</strong><span>DEMO MODE · SANDBOX</span></div><span className="badge live">ONLINE</span></div><div className="demo-message customer">{demoMessage}</div><div className="demo-message handle">I can handle that. I’ll check the business calendar and rules.</div><div className="demo-message handle">Tomorrow at 4:30 PM is available.</div><div className="demo-message customer">Perfect. Book it.</div><div className="demo-input"><input value={demoMessage} onChange={(e)=>setDemoMessage(e.target.value)} aria-label="Demo customer message"/><button className="btn dark" onClick={runDemo} disabled={demoRunning}>{demoRunning ? 'Running…' : 'Run HANDLE'}</button></div></div><div className="demo-action-panel"><div className="eyebrow">ACTION TIMELINE</div>{demoSteps.map(([title,text],i)=><div key={title} className={'demo-step '+(i<=demoStep?'active':'')}><div className="step-index">0{i+1}</div><div><strong>{title}</strong><p>{text}</p></div><span className="step-dot"/></div>)}<div className="demo-result"><span className="status-dot"/> {activeAction[0]} · {activeAction[1]}</div></div></div></div></section>
+      <section id="loop" className="section loop-section"><div className="container"><div className="eyebrow">THE HANDLE LOOP</div><div className="loop-title-row"><h2 className="section-title">FROM MESSAGE<br/><span className="serif">TO MOMENTUM.</span></h2><span className="loop-stamp">SCROLL / WATCH THE SYSTEM MOVE</span></div><div className="loop-track">{loop.map(([n, title, text], index) => <article key={n} className={'loop-card ' + (index === step ? 'active' : '')} data-reveal data-depth={String(index % 2 ? 26 : -22)}><div className="loop-no">{n}</div><div><span className="eyebrow">{title}</span><h3>{text}</h3></div><div className="loop-orbit"><span /></div></article>)}</div></div></section>
 
-      <section className="section section-stone"><div className="container split"><div><div className="eyebrow">THE MEMORY</div><h2 className="section-title">YOUR BUSINESS.<br/><span className="serif">REMEMBERED.</span></h2><p className="lead-copy dark-text">Bring in your website, policies, catalogues, FAQs and documents. Review what HANDLE learned before it goes live.</p></div><div className="editorial-card"><div className="eyebrow">KNOWLEDGE BASE · 5 SOURCES</div><div className="knowledge-files">{['Pricing.pdf','Menu.pdf','Website','FAQ.csv','Policy.docx'].map((x,i)=><div key={x} className="knowledge-file"><span className="file-index">0{i+1}</span><strong>{x}</strong><span className="badge">{i===2?'SYNCED':'READY'}</span></div>)}</div><div className="knowledge-query"><div className="eyebrow">ASK HANDLE</div><strong>What is our cancellation policy?</strong><p className="muted">Policy.docx · source-linked · confidence 98%</p></div></div></div></section>
+      <section className="section demo-section"><div className="container"><div className="eyebrow">THE LIVE DEMO</div><div className="demo-layout"><div className="demo-window" data-reveal><div className="window-bar"><span className="window-dots">● ● ●</span><strong>HANDLE / CUSTOMER SIMULATION</strong><span>DEMO</span></div><div className="demo-body"><div className="demo-thread"><div className="chat customer">{demoInput}</div><div className="chat handle">I’ll check the rules, availability and customer context.</div><div className="chat handle">Tomorrow at 4:30 PM is available.</div><div className="chat customer">Perfect. Book it.</div></div><div className="demo-input"><input value={demoInput} onChange={(e) => setDemoInput(e.target.value)} aria-label="Customer simulation"/><button className="btn dark" onClick={runDemo}>{running ? 'RUNNING…' : 'RUN HANDLE'}</button></div></div></div><div className="timeline-panel" data-reveal><div className="eyebrow">ACTION TIMELINE</div>{loop.map(([n, title, text], index) => <div className={'timeline-step ' + (index <= step ? 'active' : '')} key={n}><span>{n}</span><div><strong>{title}</strong><p>{text}</p></div><i /></div>)}</div></div></div></section>
 
-      <section id="connections" className="section"><div className="container"><div className="eyebrow">THE CONNECTIONS</div><h2 className="section-title">ONE HANDLE.<br/><span className="serif">MANY SYSTEMS.</span></h2><div className="connection-stage"><div className="connection-center"><div className="connection-core">HANDLE</div><span>CONNECTED OPERATING LAYER</span></div>{connectors.map((x,i)=><button key={x} className={'connection-node node-'+(i%8)+' '+(activeConnector===x?'selected':'')} onMouseEnter={()=>setActiveConnector(x)} onFocus={()=>setActiveConnector(x)} onClick={()=>setActiveConnector(x)}><strong>{x}</strong><small>{activeConnector===x ? 'CONNECTED · LIVE PREVIEW' : 'READY'}</small></button>)}</div></div></section>
+      <section id="connections" className="section connections-section section-stone"><div className="container"><div className="eyebrow">THE CONNECTION LAYER</div><div className="section-head split-head"><h2 className="section-title">ONE HANDLE.<br/><span className="serif">MANY SYSTEMS.</span></h2><p className="lead-copy dark-text">Meet the stack without rebuilding your business around another silo.</p></div><div className="connection-constellation" data-reveal><div className="constellation-core"><span>HANDLE</span><small>CONNECTED OPERATING LAYER</small></div>{connectors.map((item, index) => <button key={item} className={'connection-node node-' + (index % 8) + (connector === item ? ' selected' : '')} onMouseEnter={() => { setConnector(item); setActiveNode(index % 3); }} onFocus={() => setConnector(item)} onClick={() => setConnector(item)}><strong>{item}</strong><small>{connector === item ? 'CONNECTED · LIVE' : 'READY'}</small></button>)}</div></div></section>
 
-      <section id="workflows" className="section section-dark"><div className="container"><div className="eyebrow">THE WORKFLOWS</div><h2 className="section-title">WORK THAT<br/><span className="serif">MOVES ITSELF.</span></h2><div className="workflow-story">{['NEW LEAD','QUALIFY','CREATE CRM','FOLLOW UP','BOOK CALL'].map((x,i)=><div key={x} className="workflow-story-step"><div className="workflow-node-number">0{i+1}</div><strong>{x}</strong><span>{['Instagram DM','AI decision','Contact created','WhatsApp','Calendar'][i]}</span></div>)}</div></div></section>
+      <section className="section architecture-section section-dark"><div className="container"><div className="eyebrow">THE ARCHITECTURE</div><div className="architecture-grid">{['INBOX', 'KNOWLEDGE', 'DECISION ENGINE', 'WORKFLOWS', 'HUMAN HANDOFF', 'AUDIT'].map((item, index) => <div key={item} className="architecture-cell" data-depth={String(index % 2 ? -18 : 20)} data-reveal><span>0{index + 1}</span><strong>{item}</strong><p>{['Capture every thread.', 'Give the system memory.', 'Apply business rules.', 'Move work across tools.', 'Escalate with context.', 'Keep actions explainable.'][index]}</p></div>)}</div></div></section>
 
-      <section className="section"><div className="container split"><div><div className="eyebrow">THE HUMAN</div><h2 className="section-title">AUTOMATION DOESN’T MEAN<br/><span className="serif">LOSING CONTROL.</span></h2><p className="lead-copy dark-text">HANDLE can pause, ask for approval or hand the conversation to a person. Important decisions stay understandable and auditable.</p></div><div className="handoff-card"><div className="handoff-top"><span className="badge">ESCALATION</span><span className="eyebrow">REFUND · ₹3,500</span></div><h3>Approval required.</h3><p>A refund request falls outside the business rule.</p><div className="handoff-flow"><div><span className="status-dot"/> HANDLE ACTIVE</div><i>→</i><div className="highlight">HUMAN ACTIVE</div></div><div className="handoff-actions"><button className="btn dark">Take over</button><button className="btn">Review context</button></div></div></div></section>
+      <section id="pricing" className="section pricing-section"><div className="container"><div className="eyebrow">PRICING</div><div className="section-head split-head"><h2 className="section-title">SERIOUS AUTOMATION.<br/><span className="serif">SANE PRICING.</span></h2><p className="lead-copy dark-text">Start with a real operating layer, not a maze of enterprise setup screens.</p></div><div className="pricing-grid">{[['STARTER', '$9', 'For one business and the first 10 workflows'], ['GROWTH', '$29', 'For growing teams with deeper automation'], ['PRO', '$79', 'For advanced operations and scale']].map(([name, price, desc], index) => <article className={'price-card ' + (index === 1 ? 'featured' : '')} key={name} data-reveal><div className="eyebrow">{name}</div><div className="price">{price}<span>/mo</span></div><p>{desc}</p><div className="price-list"><span>✓ Inbox</span><span>✓ Knowledge</span><span>✓ Workflow engine</span><span>✓ Human handoff</span></div><Link href="/signup" className="btn dark magnetic" data-magnetic="100">START FREE <span>↗</span></Link></article>)}</div></div></section>
 
-      <section className="section section-stone"><div className="container"><div className="eyebrow">THE RESULT</div><h2 className="section-title">SHOW ME WHAT<br/><span className="serif">HANDLE DID.</span></h2><div className="metric-grid result-metrics" style={{ marginTop: 38 }}><div className="metric"><strong>37</strong><span>hours saved · example</span></div><div className="metric"><strong>87%</strong><span>resolved automatically · example</span></div><div className="metric"><strong>214</strong><span>leads captured · example</span></div></div></div></section>
+      <section className="final-cta section-dark"><div className="final-grid" /><div className="container final-inner" data-reveal><div className="eyebrow">THE LAST SCREEN</div><h2 className="display">WE <span className="serif">HANDLE</span> IT.</h2><p>Less chasing. Less copy-paste. More business actually moving.</p><div className="hero-actions"><Link href="/signup" className="btn acid magnetic" data-magnetic="130">START FREE <span>↗</span></Link><Link href="/login" className="btn light-outline magnetic" data-magnetic="95">LOG IN <span>→</span></Link></div></div></section>
 
-      <section id="pricing" className="section"><div className="container"><div className="eyebrow">PRICING</div><h2 className="section-title">SERIOUS AUTOMATION.<br/><span className="serif">WITHOUT THE ENTERPRISE BILL.</span></h2><div className="pricing" style={{ marginTop: 44 }}>{[['Starter','$9','One business · essential automation'],['Growth','$29','Growing operations · more workflows'],['Pro','$79','Advanced teams · larger scale']].map((p,i)=><div className={'price-card '+(i===1?'featured':'')} key={p[0]}><div className="eyebrow">{p[0]}</div><div className="price">{p[1]}<span style={{ fontSize: 15 }}>/mo</span></div><p className="muted" style={{ color: i===1 ? '#aaa' : undefined }}>{p[2]}</p><div className="price-list"><span>✓ HANDLE inbox</span><span>✓ Knowledge sources</span><span>✓ Workflow engine</span><span>✓ Usage visibility</span></div><Link className="btn" style={{ marginTop: 18, display: 'inline-block', borderColor: i===1 ? '#f5f3ee' : undefined, color: i===1 ? '#f5f3ee' : undefined }} href="/signup">START FREE</Link></div>)}</div></div></section>
-
-      <section className="section section-dark final-section"><div className="container" style={{ textAlign: 'center' }}><div className="eyebrow">THE LAST SCREEN</div><h2 className="display" style={{ margin: '20px 0 28px' }}>WE <span className="serif">HANDLE</span> IT.</h2><p className="final-copy">Give your business fewer repetitive tasks and more room to grow.</p><div className="hero-actions" style={{ justifyContent: 'center' }}><Link className="btn yellow" href="/signup">START FREE</Link><Link className="btn light-outline" href="/login">TRY HANDLE</Link></div></div></section>
-
-      <footer className="footer"><div className="container"><div className="footer-main"><div><div className="display footer-logo">HANDLE</div><p className="muted" style={{ color: '#8f8a81' }}>Business has better things to do.</p></div><div className="footer-links"><div><div className="eyebrow" style={{ color: '#8f8a81' }}>PRODUCT</div><Link href="/dashboard/inbox">Inbox</Link><Link href="/dashboard/workflows">Workflows</Link><Link href="/dashboard/connections">Connections</Link></div><div><div className="eyebrow" style={{ color: '#8f8a81' }}>COMPANY</div><a href="#pricing">Pricing</a><a href="#connections">Integrations</a><a href="#system">Security</a></div></div></div><div className="footer-bottom">© 2026 HANDLE · WE HANDLE IT.</div></div></footer>
+      <footer className="footer"><div className="container"><div className="footer-main"><div><div className="display footer-logo">HANDLE<span className="wordmark-dot">◼</span></div><p>Business has better things to do.</p></div><div className="footer-links"><div><div className="eyebrow">PRODUCT</div><Link href="#loop">Loop</Link><Link href="#connections">Connections</Link><Link href="#pricing">Pricing</Link></div><div><div className="eyebrow">ACCOUNT</div><Link href="/login">Log in</Link><Link href="/signup">Start free</Link><a href="#system">Security</a></div></div></div><div className="footer-bottom"><span>© 2026 HANDLE</span><span>WORK IN MOTION.</span></div></div></footer>
     </main>
   );
 }
