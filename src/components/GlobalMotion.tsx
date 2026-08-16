@@ -9,6 +9,7 @@ export default function GlobalMotion() {
     if (reduced.matches) document.documentElement.dataset.motion = 'reduced';
 
     const root = document.documentElement;
+    const layer = document.querySelector<HTMLElement>('.page-fade-layer');
     const pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     let raf = 0;
     let lastX = pointer.x;
@@ -54,6 +55,11 @@ export default function GlobalMotion() {
       button.appendChild(ripple);
       window.setTimeout(() => ripple.remove(), 650);
 
+      const href = (button as HTMLAnchorElement).href;
+      if (layer && href && !href.startsWith('javascript:') && href.includes(window.location.origin) && new URL(href).pathname !== window.location.pathname) {
+        layer.classList.add('is-wiping');
+      }
+
       if (button.matches('[data-like]')) {
         button.classList.toggle('is-liked');
         const burst = document.createElement('span');
@@ -89,10 +95,24 @@ export default function GlobalMotion() {
       }),
       { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
     );
-    document.querySelectorAll<HTMLElement>('section, .panel, .card, .editorial-card, .price-card, .stat-card, .connection-node, .workflow-story-step').forEach((el) => {
-      el.classList.add('motion-reveal');
-      revealObserver.observe(el);
-    });
+
+    const highlightObserver = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add('is-visible');
+      }),
+      { threshold: 0.6 },
+    );
+
+    const registerVisuals = () => {
+      document.querySelectorAll<HTMLElement>('section, .panel, .card, .editorial-card, .price-card, .stat-card, .connection-node, .workflow-story-step').forEach((el) => {
+        if (!el.classList.contains('motion-reveal')) el.classList.add('motion-reveal');
+        revealObserver.observe(el);
+      });
+      document.querySelectorAll<HTMLElement>('.lead-copy, .final-copy, [data-highlight]').forEach((el) => {
+        el.classList.add('text-highlight');
+        highlightObserver.observe(el);
+      });
+    };
 
     const tilt = (event: PointerEvent) => {
       if (touch.matches || reduced.matches) return;
@@ -118,6 +138,19 @@ export default function GlobalMotion() {
       root.style.setProperty('--scroll-progress', `${progress}`);
       root.style.setProperty('--scroll-velocity', `${Math.min(1.8, Math.abs(scrollY - Number(root.dataset.lastScroll || scrollY)) / 20)}`);
       root.dataset.lastScroll = String(scrollY);
+    };
+
+    const setupInteractiveAttributes = () => {
+      document.querySelectorAll<HTMLElement>('.btn, .google-button, .connection-node, .mobile-menu-toggle, .motion-fab > button, .side-link').forEach((el) => {
+        if (!el.hasAttribute('data-magnetic')) el.setAttribute('data-magnetic', touch.matches ? '0' : '120');
+      });
+      document.querySelectorAll<HTMLElement>('.btn, .google-button').forEach((el) => {
+        el.classList.add('liquid-button');
+      });
+      document.querySelectorAll<HTMLButtonElement>('button[type="submit"], .auth-submit').forEach((el) => {
+        el.setAttribute('data-submit-motion', 'true');
+      });
+      document.querySelectorAll<HTMLElement>('.notification-count, .badge.live').forEach((el) => el.classList.add('notification-badge'));
     };
 
     const ensureMobileMenu = () => {
@@ -220,6 +253,10 @@ export default function GlobalMotion() {
     ensureMobileMenu();
     ensureFab();
     setupTooltips();
+    setupInteractiveAttributes();
+    registerVisuals();
+    scroll();
+
     window.addEventListener('pointermove', move, { passive: true });
     window.addEventListener('pointermove', hover, { passive: true });
     window.addEventListener('pointermove', tilt, { passive: true });
@@ -231,6 +268,7 @@ export default function GlobalMotion() {
     return () => {
       cancelAnimationFrame(raf);
       revealObserver.disconnect();
+      highlightObserver.disconnect();
       canvas.remove();
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointermove', hover);
