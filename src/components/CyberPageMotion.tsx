@@ -22,80 +22,74 @@ export default function CyberPageMotion() {
             trigger: root,
             start: 'top top',
             end: 'bottom bottom',
-            scrub: 0.25,
+            scrub: 0.2,
+            invalidateOnRefresh: true,
           },
         });
       }
 
       gsap.utils.toArray<HTMLElement>('.cyber-section').forEach((section, index) => {
         const header = section.querySelector<HTMLElement>('.cyber-section-header');
-        const columns = section.querySelectorAll<HTMLElement>('.cyber-section-grid > *, .cyber-connector-grid, .cyber-flow-card, .cyber-architecture-card, .cyber-pricing-card');
-
-        gsap.fromTo(
-          section,
-          { opacity: 0.45 },
-          {
-            opacity: 1,
-            duration: 0.8,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top 84%',
-              end: 'center 46%',
-              scrub: 0.7,
-            },
-          },
+        const columns = section.querySelectorAll<HTMLElement>(
+          '.cyber-section-grid > *, .cyber-connector-grid, .cyber-flow-card, .cyber-architecture-card, .cyber-pricing-card',
         );
 
+        // Content is always rendered immediately. Scroll only enhances its presentation.
+        gsap.set(section, { opacity: 1, y: 0, clearProps: 'filter' });
         gsap.fromTo(
           section,
-          { y: 30 },
+          { y: 18 },
           {
             y: 0,
             ease: 'none',
             scrollTrigger: {
               trigger: section,
-              start: 'top bottom',
-              end: 'bottom top',
+              start: 'top bottom+=18%',
+              end: 'bottom top-=10%',
               scrub: 1.1,
+              invalidateOnRefresh: true,
             },
           },
         );
 
         if (header) {
+          gsap.set(header, { opacity: 1, y: 0, rotateX: 0 });
           gsap.fromTo(
             header,
-            { y: 70, opacity: 0, rotateX: 8 },
+            { y: 28, opacity: 0.92, rotateX: 2 },
             {
               y: 0,
               opacity: 1,
               rotateX: 0,
-              ease: 'power3.out',
+              ease: 'power2.out',
               scrollTrigger: {
                 trigger: section,
-                start: 'top 82%',
-                end: 'top 52%',
-                scrub: 0.8,
+                start: 'top 96%',
+                end: 'top 62%',
+                scrub: 0.65,
+                invalidateOnRefresh: true,
               },
             },
           );
         }
 
         if (columns.length) {
+          gsap.set(columns, { opacity: 1, y: 0, rotateY: 0 });
           gsap.fromTo(
             columns,
-            { y: 80, opacity: 0, rotateY: (index % 2 ? 5 : -5) },
+            { y: 34, opacity: 0.96, rotateY: index % 2 ? 2 : -2 },
             {
               y: 0,
               opacity: 1,
               rotateY: 0,
-              stagger: 0.08,
-              ease: 'power3.out',
+              stagger: 0.05,
+              ease: 'power2.out',
               scrollTrigger: {
                 trigger: section,
-                start: 'top 76%',
-                end: 'center 56%',
-                scrub: 0.9,
+                start: 'top 94%',
+                end: 'top 58%',
+                scrub: 0.75,
+                invalidateOnRefresh: true,
               },
             },
           );
@@ -104,41 +98,44 @@ export default function CyberPageMotion() {
 
       gsap.utils.toArray<HTMLElement>('.cyber-flow-card').forEach((card, index) => {
         gsap.to(card, {
-          y: index % 2 ? -34 : 24,
-          rotateZ: index % 2 ? -1.5 : 1.5,
+          y: index % 2 ? -26 : 18,
+          rotateZ: index % 2 ? -1 : 1,
           ease: 'none',
           scrollTrigger: {
             trigger: card,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.2,
+            start: 'top 108%',
+            end: 'bottom -8%',
+            scrub: 1.1,
+            invalidateOnRefresh: true,
           },
         });
       });
 
       gsap.utils.toArray<HTMLElement>('.cyber-architecture-card').forEach((card, index) => {
         gsap.to(card, {
-          y: index % 3 === 0 ? -44 : index % 3 === 1 ? 18 : -16,
+          y: index % 3 === 0 ? -34 : index % 3 === 1 ? 14 : -12,
           ease: 'none',
           scrollTrigger: {
             trigger: card,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.25,
+            start: 'top 108%',
+            end: 'bottom -8%',
+            scrub: 1.15,
+            invalidateOnRefresh: true,
           },
         });
       });
 
       gsap.utils.toArray<HTMLElement>('.cyber-pricing-card').forEach((card, index) => {
         gsap.to(card, {
-          y: index === 1 ? -34 : 18,
-          rotateY: index === 1 ? 0 : index === 0 ? -3 : 3,
+          y: index === 1 ? -26 : 14,
+          rotateY: index === 1 ? 0 : index === 0 ? -2 : 2,
           ease: 'none',
           scrollTrigger: {
             trigger: card,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.15,
+            start: 'top 108%',
+            end: 'bottom -8%',
+            scrub: 1.1,
+            invalidateOnRefresh: true,
           },
         });
       });
@@ -146,32 +143,35 @@ export default function CyberPageMotion() {
       const connectorGrid = root.querySelector<HTMLElement>('.cyber-connector-grid');
       if (connectorGrid) {
         gsap.to(connectorGrid, {
-          y: -45,
-          rotate: -1.5,
+          y: -34,
+          rotate: -1,
           ease: 'none',
           scrollTrigger: {
             trigger: connectorGrid,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.3,
+            start: 'top 108%',
+            end: 'bottom -8%',
+            scrub: 1.2,
+            invalidateOnRefresh: true,
           },
         });
       }
 
       gsap.utils.toArray<HTMLElement>('.cyber-kicker').forEach((kicker) => {
         gsap.to(kicker, {
-          letterSpacing: '0.24em',
+          letterSpacing: '0.23em',
           ease: 'none',
           scrollTrigger: {
             trigger: kicker,
-            start: 'top 82%',
-            end: 'top 35%',
-            scrub: 0.7,
+            start: 'top 96%',
+            end: 'top 40%',
+            scrub: 0.65,
+            invalidateOnRefresh: true,
           },
         });
       });
 
-      ScrollTrigger.refresh();
+      // Refresh after layout is painted so triggers calculate from the final dimensions.
+      requestAnimationFrame(() => ScrollTrigger.refresh());
     }, root);
 
     return () => ctx.revert();
