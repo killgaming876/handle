@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { VideoScrollHero } from '@/components/VideoScrollHero';
+import CyberPageMotion from '@/components/CyberPageMotion';
 
 const connectors = ['WhatsApp', 'Instagram', 'Messenger', 'Gmail', 'Outlook', 'Calendar', 'Calendly', 'Shopify', 'WooCommerce', 'Stripe', 'Razorpay', 'HubSpot'];
 const architecture = [
-  ['01', 'CAPTURE', 'Every conversation enters one operating layer.'],
+  ['01', 'CAPTURE', 'Every conversation lands in one operating layer.'],
   ['02', 'UNDERSTAND', 'Context and knowledge become immediately usable.'],
   ['03', 'DECIDE', 'Rules choose the next business-safe action.'],
   ['04', 'ACT', 'Connected systems execute the repetitive work.'],
@@ -16,6 +17,7 @@ export function Marketing() {
   return (
     <main className="cyber-page">
       <div className="cyber-page-progress" aria-hidden="true" />
+      <CyberPageMotion />
       <VideoScrollHero />
 
       <section id="system" className="cyber-section">
