@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import type { PointerEvent, ReactNode } from 'react';
 
 const loop = [
   ['01', 'CAPTURE', 'Every conversation lands in one operating layer.'],
@@ -19,7 +20,7 @@ const plans = [
 
 function usePanelGlow() {
   const ref = useRef<HTMLDivElement>(null);
-  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const element = ref.current;
     if (!element) return;
     const rect = element.getBoundingClientRect();
@@ -31,9 +32,11 @@ function usePanelGlow() {
 
 export function ImmersiveModules() {
   const simulatorRef = useRef<HTMLElement>(null);
+  const pricingRef = useRef<HTMLDivElement>(null);
   const [demoInput, setDemoInput] = useState('Can you book me tomorrow at 4:30?');
   const [step, setStep] = useState(0);
   const [running, setRunning] = useState(false);
+  const [activePlan, setActivePlan] = useState(1);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -56,6 +59,30 @@ export function ImmersiveModules() {
       window.removeEventListener('scroll', syncFromScroll);
       window.removeEventListener('resize', syncFromScroll);
     };
+  }, []);
+
+  useEffect(() => {
+    const root = pricingRef.current;
+    if (!root) return;
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('.immersive-price-card'));
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cards.forEach((card) => card.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const card = entry.target as HTMLElement;
+        if (entry.isIntersecting) card.classList.add('is-visible');
+        if (entry.intersectionRatio > 0.62) {
+          const index = Number(card.dataset.planIndex ?? 0);
+          setActivePlan(index);
+        }
+      });
+    }, { threshold: [0.15, 0.62] });
+
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => () => {
@@ -138,9 +165,9 @@ export function ImmersiveModules() {
             <h2 className="section-title">SERIOUS AUTOMATION.<br /><span className="serif">SANE PRICING.</span></h2>
             <p className="lead-copy dark-text">Three clean operating tiers. The active card lifts, glows and stays visually anchored while you move through the section.</p>
           </div>
-          <div className="pricing-grid immersive-pricing-grid">
+          <div ref={pricingRef} className="pricing-grid immersive-pricing-grid">
             {plans.map(([name, price, description], index) => (
-              <article key={name} className={`price-card immersive-price-card ${index === 1 ? 'featured' : ''}`}>
+              <article key={name} data-plan-index={index} className={`price-card immersive-price-card ${index === activePlan ? 'is-focus' : ''} ${index === 1 ? 'featured' : ''}`}>
                 <div className="price-card-shine" />
                 <div className="eyebrow">{name}</div>
                 <div className="price">{price}<span>/mo</span></div>
@@ -156,12 +183,12 @@ export function ImmersiveModules() {
   );
 }
 
-function GlowPanel({ children, className }: { children: React.ReactNode; className: string }) {
+function GlowPanel({ children, className }: { children: ReactNode; className: string }) {
   const glow = usePanelGlow();
   return <div ref={glow.ref} onPointerMove={glow.onPointerMove} className={`glow-panel ${className}`}>{children}</div>;
 }
 
-function TraceButton({ children, onClick, href }: { children: React.ReactNode; onClick?: () => void; href?: string }) {
+function TraceButton({ children, onClick, href }: { children: ReactNode; onClick?: () => void; href?: string }) {
   const className = 'btn dark magnetic trace-button';
   if (href) return <Link href={href} className={className} data-magnetic="110">{children}<i className="trace-orbit" aria-hidden="true" /></Link>;
   return <button type="button" className={className} onClick={onClick}>{children}<i className="trace-orbit" aria-hidden="true" /></button>;
