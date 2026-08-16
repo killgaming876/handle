@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import './AuthPanel.module.css';
 import { supabase } from '@/lib/supabase';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '/handle';
