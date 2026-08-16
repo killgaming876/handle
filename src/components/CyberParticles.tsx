@@ -2,6 +2,25 @@
 
 import { useEffect, useRef } from 'react';
 
+type Particle = { x: number; y: number; vx: number; vy: number; size: number; alpha: number; sprite: HTMLCanvasElement };
+
+function makeSprite(hue: number): HTMLCanvasElement {
+  const size = 28;
+  const sprite = document.createElement('canvas');
+  sprite.width = size;
+  sprite.height = size;
+  const ctx = sprite.getContext('2d');
+  if (!ctx) return sprite;
+  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  gradient.addColorStop(0, `hsla(${hue}, 95%, 82%, 1)`);
+  gradient.addColorStop(0.18, `hsla(${hue}, 95%, 72%, .8)`);
+  gradient.addColorStop(0.52, `hsla(${hue}, 95%, 62%, .2)`);
+  gradient.addColorStop(1, `hsla(${hue}, 95%, 55%, 0)`);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+  return sprite;
+}
+
 export default function CyberParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -13,19 +32,20 @@ export default function CyberParticles() {
 
     const mobile = window.matchMedia('(max-width: 767px)').matches;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const count = reduced ? 40 : mobile ? 85 : 150;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const count = reduced ? 32 : mobile ? 70 : 120;
     const pointer = { x: -1000, y: -1000, active: false };
+    const purpleSprite = makeSprite(272);
+    const cyanSprite = makeSprite(188);
+    const particles: Particle[] = [];
     let animationFrame = 0;
     let width = 0;
     let height = 0;
-
-    type Particle = { x: number; y: number; vx: number; vy: number; size: number; alpha: number; hue: number };
-    const particles: Particle[] = [];
+    let dpr = 1;
 
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       canvas.style.width = `${width}px`;
@@ -37,11 +57,11 @@ export default function CyberParticles() {
           particles.push({
             x: Math.random() * width,
             y: Math.random() * height,
-            vx: (Math.random() - 0.5) * 0.18,
-            vy: (Math.random() - 0.5) * 0.12,
-            size: Math.random() * 1.7 + 0.45,
-            alpha: Math.random() * 0.55 + 0.14,
-            hue: Math.random() > 0.5 ? 272 : 188,
+            vx: (Math.random() - 0.5) * 0.16,
+            vy: (Math.random() - 0.5) * 0.1,
+            size: Math.random() * 1.35 + 0.55,
+            alpha: Math.random() * 0.48 + 0.12,
+            sprite: Math.random() > 0.52 ? purpleSprite : cyanSprite,
           });
         }
       }
@@ -65,29 +85,27 @@ export default function CyberParticles() {
           if (pointer.active) {
             const dx = particle.x - pointer.x;
             const dy = particle.y - pointer.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < 140 && distance > 1) {
-              const force = (140 - distance) / 140;
-              particle.x += (dx / distance) * force * 1.25;
-              particle.y += (dy / distance) * force * 1.25;
+            const distanceSquared = dx * dx + dy * dy;
+            if (distanceSquared < 160 * 160 && distanceSquared > 1) {
+              const distance = Math.sqrt(distanceSquared);
+              const force = (160 - distance) / 160;
+              particle.x += (dx / distance) * force * 1.1;
+              particle.y += (dy / distance) * force * 1.1;
             }
           }
 
-          if (particle.x < -10) particle.x = width + 10;
-          if (particle.x > width + 10) particle.x = -10;
-          if (particle.y < -10) particle.y = height + 10;
-          if (particle.y > height + 10) particle.y = -10;
+          if (particle.x < -20) particle.x = width + 20;
+          if (particle.x > width + 20) particle.x = -20;
+          if (particle.y < -20) particle.y = height + 20;
+          if (particle.y > height + 20) particle.y = -20;
         }
 
-        const gradient = context.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, particle.size * 5);
-        gradient.addColorStop(0, `hsla(${particle.hue}, 90%, 72%, ${particle.alpha})`);
-        gradient.addColorStop(1, `hsla(${particle.hue}, 90%, 72%, 0)`);
-        context.fillStyle = gradient;
-        context.beginPath();
-        context.arc(particle.x, particle.y, particle.size * 4, 0, Math.PI * 2);
-        context.fill();
+        const drawSize = 22 * particle.size;
+        context.globalAlpha = particle.alpha;
+        context.drawImage(particle.sprite, particle.x - drawSize / 2, particle.y - drawSize / 2, drawSize, drawSize);
       }
 
+      context.globalAlpha = 1;
       if (!reduced) animationFrame = requestAnimationFrame(render);
     };
 
