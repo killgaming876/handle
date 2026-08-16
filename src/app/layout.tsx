@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import GlobalMotion from '@/components/GlobalMotion';
 
 export const metadata: Metadata = {
   title: 'HANDLE — We Handle It.',
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <GlobalMotion />
+        {children}
+      </body>
     </html>
   );
 }
