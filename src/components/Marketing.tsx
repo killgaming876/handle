@@ -50,14 +50,8 @@ export function Marketing() {
   }, []);
 
   return (
-    <main ref={pageRef} className="handle-lux-page">
+    <main ref={pageRef} className="handle-lux-page cyber-page">
       <div className="lux-progress"><span /></div>
-      <nav className="lux-nav">
-        <Link href="/" className="lux-brand magnetic">HANDLE<span>◼</span></Link>
-        <div className="lux-nav-links"><a href="#system">Product</a><a href="#loop">How it works</a><a href="#connections">Integrations</a><a href="#pricing">Pricing</a></div>
-        <div className="lux-nav-actions"><Link href="/login" className="lux-nav-login">Log in</Link><Link href="/signup" className="lux-pill">START FREE ↗</Link></div>
-      </nav>
-
       <VideoScrollHero />
 
       <section id="system" className="lux-section lux-dark lux-system">
