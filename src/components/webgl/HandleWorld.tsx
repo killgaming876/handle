@@ -1,14 +1,15 @@
 'use client';
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { AdditiveBlending, Color, MathUtils } from 'three';
+import { AdditiveBlending, MathUtils } from 'three';
+import type { Points, ShaderMaterial } from 'three';
 import { useMemo, useRef } from 'react';
 import { EffectComposer, Bloom, Noise, Vignette } from '@react-three/postprocessing';
 import { useMotionStore } from '@/stores/motionStore';
 
 function ParticleField() {
-  const points = useRef<THREE.Points>(null);
-  const material = useRef<THREE.ShaderMaterial>(null);
+  const points = useRef<Points>(null);
+  const material = useRef<ShaderMaterial>(null);
   const { quality, normalizedVelocity, scrollProgress, pointerX, pointerY } = useMotionStore();
   const count = quality === 'ultra' ? 1800 : quality === 'high' ? 1200 : quality === 'medium' ? 650 : 300;
 
@@ -31,10 +32,10 @@ function ParticleField() {
     uTime: { value: 0 },
     uVelocity: { value: 0 },
     uProgress: { value: 0 },
-    uPointer: { value: [0.5, 0.5] },
+    uPointer: { value: [0.5, 0.5] as [number, number] },
   }), []);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (!points.current || !material.current) return;
     material.current.uniforms.uTime.value += delta;
     material.current.uniforms.uVelocity.value = MathUtils.damp(material.current.uniforms.uVelocity.value, normalizedVelocity, 5, delta);
