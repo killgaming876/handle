@@ -1,7 +1,7 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Line, MeshTransmissionMaterial, OrbitControls } from '@react-three/drei';
+import { Float, Line, MeshTransmissionMaterial, OrbitControls, RoundedBox } from '@react-three/drei';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -21,8 +21,7 @@ function Node({ label, sub, pos, color, active }: (typeof nodes)[number] & { act
   return (
     <Float speed={active ? 2 : 1.1} rotationIntensity={active ? 0.32 : 0.12} floatIntensity={active ? 0.5 : 0.22}>
       <group ref={ref} position={pos}>
-        <mesh>
-          <roundedBoxGeometry args={[2.25, 1.04, 0.18, 0.08]} />
+        <RoundedBox args={[2.25, 1.04, 0.18]} radius={0.08} smoothness={4}>
           <MeshTransmissionMaterial
             samples={3}
             resolution={256}
@@ -34,7 +33,7 @@ function Node({ label, sub, pos, color, active }: (typeof nodes)[number] & { act
             ior={1.28}
             color={color}
           />
-        </mesh>
+        </RoundedBox>
         <mesh position={[0, 0, 0.105]}>
           <planeGeometry args={[2.12, 0.9]} />
           <meshBasicMaterial color="#0f0f0d" transparent opacity={0.73} />
