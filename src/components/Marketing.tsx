@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { VideoScrollHero } from '@/components/VideoScrollHero';
 import CyberPageMotion from '@/components/CyberPageMotion';
+import CyberParticles from '@/components/CyberParticles';
 
 const connectors = ['WhatsApp', 'Instagram', 'Messenger', 'Gmail', 'Outlook', 'Calendar', 'Calendly', 'Shopify', 'WooCommerce', 'Stripe', 'Razorpay', 'HubSpot'];
 const architecture = [
@@ -16,6 +17,7 @@ const architecture = [
 export function Marketing() {
   return (
     <main className="cyber-page">
+      <CyberParticles />
       <div className="cyber-page-progress" aria-hidden="true" />
       <CyberPageMotion />
       <VideoScrollHero />
