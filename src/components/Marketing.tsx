@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import SystemMap3D from '@/components/SystemMap3D';
+import { ImmersiveModules } from '@/components/ImmersiveModules';
 
 const connectors = ['WhatsApp', 'Instagram', 'Messenger', 'Gmail', 'Outlook', 'Calendar', 'Calendly', 'Shopify', 'WooCommerce', 'Stripe', 'Razorpay', 'HubSpot', 'Salesforce', 'Zoho', 'Drive', 'Website'];
 const loop = [
@@ -16,25 +17,7 @@ const heroLetters = 'WE HANDLE IT.'.split('').map((char, index) => ({ char: char
 
 export function Marketing() {
   const [activeNode, setActiveNode] = useState(0);
-  const [demoInput, setDemoInput] = useState('Can you book me tomorrow at 4:30?');
-  const [running, setRunning] = useState(false);
-  const [step, setStep] = useState(4);
   const [connector, setConnector] = useState('WhatsApp');
-
-  const runDemo = () => {
-    if (running) return;
-    setRunning(true);
-    setStep(0);
-    let current = 0;
-    const timer = window.setInterval(() => {
-      current += 1;
-      setStep(current);
-      if (current >= loop.length - 1) {
-        window.clearInterval(timer);
-        setRunning(false);
-      }
-    }, 620);
-  };
 
   return (
     <main className="handle-site">
@@ -74,15 +57,13 @@ export function Marketing() {
 
       <section id="system" className="section section-dark system-section"><div className="container"><div className="section-head split-head" data-reveal><div><div className="eyebrow">THE BUSINESS OS</div><h2 className="section-title">TOO MANY<br/><span className="serif">SYSTEMS.</span></h2></div><p className="lead-copy">Your customer journey is already one thing. Your software just broke it into pieces. HANDLE restores the operating layer between the pieces.</p></div><div className="system-bento" data-reveal><div className="bento-large bento-dark"><div className="bento-top"><span>OPERATING LAYER</span><span>01 / 05</span></div><div className="bento-giant">CONVERSATION<br/><span>→</span> ACTION</div><div className="bento-wire"><div /><div /><div /></div></div><div className="bento-small bento-dark hover-lift"><span className="eyebrow">CONTEXT</span><strong>One memory.</strong><p>Policies, prices, products, FAQs and customer history live together.</p></div><div className="bento-small bento-acid hover-lift"><span className="eyebrow">CONTROL</span><strong>Human in the loop.</strong><p>Approve, pause or take over when a decision matters.</p></div></div></div></section>
 
-      <section id="loop" className="section loop-section"><div className="container"><div className="eyebrow">THE HANDLE LOOP</div><div className="loop-title-row"><h2 className="section-title">FROM MESSAGE<br/><span className="serif">TO MOMENTUM.</span></h2><span className="loop-stamp">SCROLL / WATCH THE SYSTEM MOVE</span></div><div className="loop-track">{loop.map(([n, title, text], index) => <article key={n} className={'loop-card ' + (index === step ? 'active' : '')} data-reveal data-depth={String(index % 2 ? 26 : -22)}><div className="loop-no">{n}</div><div><span className="eyebrow">{title}</span><h3>{text}</h3></div><div className="loop-orbit"><span /></div></article>)}</div></div></section>
+      <section id="loop" className="section loop-section"><div className="container"><div className="eyebrow">THE HANDLE LOOP</div><div className="loop-title-row"><h2 className="section-title">FROM MESSAGE<br/><span className="serif">TO MOMENTUM.</span></h2><span className="loop-stamp">SCROLL / WATCH THE SYSTEM MOVE</span></div><div className="loop-track">{loop.map(([n, title, text], index) => <article key={n} className={'loop-card ' + (index === activeNode ? 'active' : '')} data-reveal data-depth={String(index % 2 ? 26 : -22)}><div className="loop-no">{n}</div><div><span className="eyebrow">{title}</span><h3>{text}</h3></div><div className="loop-orbit"><span /></div></article>)}</div></div></section>
 
-      <section className="section demo-section"><div className="container"><div className="eyebrow">THE LIVE DEMO</div><div className="demo-layout"><div className="demo-window" data-reveal><div className="window-bar"><span className="window-dots">● ● ●</span><strong>HANDLE / CUSTOMER SIMULATION</strong><span>DEMO</span></div><div className="demo-body"><div className="demo-thread"><div className="chat customer">{demoInput}</div><div className="chat handle">I’ll check the rules, availability and customer context.</div><div className="chat handle">Tomorrow at 4:30 PM is available.</div><div className="chat customer">Perfect. Book it.</div></div><div className="demo-input"><input value={demoInput} onChange={(e) => setDemoInput(e.target.value)} aria-label="Customer simulation"/><button className="btn dark" onClick={runDemo}>{running ? 'RUNNING…' : 'RUN HANDLE'}</button></div></div></div><div className="timeline-panel" data-reveal><div className="eyebrow">ACTION TIMELINE</div>{loop.map(([n, title, text], index) => <div className={'timeline-step ' + (index <= step ? 'active' : '')} key={n}><span>{n}</span><div><strong>{title}</strong><p>{text}</p></div><i /></div>)}</div></div></div></section>
+      <ImmersiveModules />
 
       <section id="connections" className="section connections-section section-stone"><div className="container"><div className="eyebrow">THE CONNECTION LAYER</div><div className="section-head split-head"><h2 className="section-title">ONE HANDLE.<br/><span className="serif">MANY SYSTEMS.</span></h2><p className="lead-copy dark-text">Meet the stack without rebuilding your business around another silo.</p></div><div className="connection-constellation" data-reveal><div className="constellation-core"><span>HANDLE</span><small>CONNECTED OPERATING LAYER</small></div>{connectors.map((item, index) => <button key={item} className={'connection-node node-' + (index % 8) + (connector === item ? ' selected' : '')} onMouseEnter={() => { setConnector(item); setActiveNode(index % 3); }} onFocus={() => setConnector(item)} onClick={() => setConnector(item)}><strong>{item}</strong><small>{connector === item ? 'CONNECTED · LIVE' : 'READY'}</small></button>)}</div></div></section>
 
       <section className="section architecture-section section-dark"><div className="container"><div className="eyebrow">THE ARCHITECTURE</div><div className="architecture-grid">{['INBOX', 'KNOWLEDGE', 'DECISION ENGINE', 'WORKFLOWS', 'HUMAN HANDOFF', 'AUDIT'].map((item, index) => <div key={item} className="architecture-cell" data-depth={String(index % 2 ? -18 : 20)} data-reveal><span>0{index + 1}</span><strong>{item}</strong><p>{['Capture every thread.', 'Give the system memory.', 'Apply business rules.', 'Move work across tools.', 'Escalate with context.', 'Keep actions explainable.'][index]}</p></div>)}</div></div></section>
-
-      <section id="pricing" className="section pricing-section"><div className="container"><div className="eyebrow">PRICING</div><div className="section-head split-head"><h2 className="section-title">SERIOUS AUTOMATION.<br/><span className="serif">SANE PRICING.</span></h2><p className="lead-copy dark-text">Start with a real operating layer, not a maze of enterprise setup screens.</p></div><div className="pricing-grid">{[['STARTER', '$9', 'For one business and the first 10 workflows'], ['GROWTH', '$29', 'For growing teams with deeper automation'], ['PRO', '$79', 'For advanced operations and scale']].map(([name, price, desc], index) => <article className={'price-card ' + (index === 1 ? 'featured' : '')} key={name} data-reveal><div className="eyebrow">{name}</div><div className="price">{price}<span>/mo</span></div><p>{desc}</p><div className="price-list"><span>✓ Inbox</span><span>✓ Knowledge</span><span>✓ Workflow engine</span><span>✓ Human handoff</span></div><Link href="/signup" className="btn dark magnetic" data-magnetic="100">START FREE <span>↗</span></Link></article>)}</div></div></section>
 
       <section className="final-cta section-dark"><div className="final-grid" /><div className="container final-inner" data-reveal><div className="eyebrow">THE LAST SCREEN</div><h2 className="display">WE <span className="serif">HANDLE</span> IT.</h2><p>Less chasing. Less copy-paste. More business actually moving.</p><div className="hero-actions"><Link href="/signup" className="btn acid magnetic" data-magnetic="130">START FREE <span>↗</span></Link><Link href="/login" className="btn light-outline magnetic" data-magnetic="95">LOG IN <span>→</span></Link></div></div></section>
 
