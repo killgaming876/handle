@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { HeroExperience } from '@/components/HeroExperience';
+import { VideoScrollHero } from '@/components/VideoScrollHero';
 import { ImmersiveModules } from '@/components/ImmersiveModules';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -58,7 +58,7 @@ export function Marketing() {
         <div className="lux-nav-actions"><Link href="/login" className="lux-nav-login">Log in</Link><Link href="/signup" className="lux-pill">START FREE ↗</Link></div>
       </nav>
 
-      <HeroExperience />
+      <VideoScrollHero />
 
       <section id="system" className="lux-section lux-dark lux-system">
         <div className="lux-grid-drift" />
