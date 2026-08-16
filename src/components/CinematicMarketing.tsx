@@ -1,0 +1,189 @@
+'use client';
+
+import Link from 'next/link';
+import { useRef } from 'react';
+import HandleWorld from '@/components/webgl/HandleWorld';
+import ScrollRuntime from '@/components/motion/ScrollRuntime';
+import {
+  HorizontalScroll,
+  LayeredParallax,
+  ScrollRotation,
+  ScrollTextReveal,
+  ScrollTicker,
+  ScrollZoom,
+  SceneTransition,
+  SpiralScroll,
+  StickyStage,
+  VelocityBlur,
+} from '@/components/motion/MotionPrimitives';
+
+const integrations = ['WhatsApp', 'Instagram', 'Gmail', 'Calendar', 'Shopify', 'Stripe', 'Razorpay', 'HubSpot', 'Salesforce', 'Zoho'];
+const workflow = [
+  ['01', 'MESSAGE', 'A customer starts the conversation.'],
+  ['02', 'UNDERSTAND', 'HANDLE identifies intent and context.'],
+  ['03', 'KNOWLEDGE', 'Relevant business memory is retrieved.'],
+  ['04', 'ACTION', 'The right tool executes the next move.'],
+  ['05', 'CONFIRM', 'The customer gets a clean outcome.'],
+];
+const spiralItems = ['New lead', 'Message', 'Appointment', 'Order', 'Payment', 'Follow-up'];
+
+function MagneticCTA({ href, children, secondary = false }: { href: string; children: React.ReactNode; secondary?: boolean }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  return (
+    <Link
+      ref={ref}
+      href={href}
+      className={`cinematic-cta ${secondary ? 'is-secondary' : ''}`}
+      onPointerMove={(event) => {
+        const node = ref.current;
+        if (!node || window.matchMedia('(pointer: coarse)').matches) return;
+        const rect = node.getBoundingClientRect();
+        const dx = event.clientX - rect.left - rect.width / 2;
+        const dy = event.clientY - rect.top - rect.height / 2;
+        node.style.transform = `translate3d(${dx * 0.12}px, ${dy * 0.12}px, 0)`;
+      }}
+      onPointerLeave={() => {
+        if (ref.current) ref.current.style.transform = 'translate3d(0,0,0)';
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
+export function CinematicMarketing() {
+  return (
+    <main className="cinematic-page">
+      <ScrollRuntime />
+      <HandleWorld />
+      <div className="cinematic-overlay" />
+      <div className="cinematic-progress" />
+
+      <nav className="cinematic-nav">
+        <Link className="cinematic-logo" href="/">HANDLE<span>◼</span></Link>
+        <div className="cinematic-nav-links">
+          <a href="#system">Product</a><a href="#how">How it works</a><a href="#connections">Integrations</a><a href="#pricing">Pricing</a>
+        </div>
+        <div className="cinematic-nav-actions"><Link href="/login" className="cinematic-login">LOG IN</Link><MagneticCTA href="/signup">START FREE ↗</MagneticCTA></div>
+      </nav>
+
+      <section id="hero" className="cinematic-hero" data-section="hero">
+        <LayeredParallax className="cinematic-hero-layers">
+          <div data-depth="0.4" className="hero-orbit orbit-back" />
+          <div data-depth="0.8" className="hero-orbit orbit-mid" />
+          <div data-depth="1.4" className="hero-orbit orbit-front" />
+        </LayeredParallax>
+        <div className="cinematic-hero-content">
+          <span className="cinematic-kicker">HANDLE / DIGITAL OPERATING SYSTEM</span>
+          <VelocityBlur>
+            <h1><span>WE</span> <em>HANDLE</em><br />IT.</h1>
+          </VelocityBlur>
+          <p>Customer conversations, repetitive work and everyday operations, connected in one place.</p>
+          <div className="cinematic-actions"><MagneticCTA href="/signup">START FREE ↗</MagneticCTA><MagneticCTA href="#how" secondary>SEE HOW IT WORKS ↓</MagneticCTA></div>
+          <div className="hero-system-line"><span /> SCROLL TO ENTER THE SYSTEM</div>
+        </div>
+        <div className="hero-system-states">
+          {['HANDLE', 'SYSTEMS', 'MESSAGE', 'WORKFLOW', 'ACTION', 'WE HANDLE IT.'].map((label, index) => <div key={label} className="hero-state"><small>0{index + 1}</small><span>{label}</span></div>)}
+        </div>
+      </section>
+
+      <section id="system" className="story-section systems-section" data-section="systems">
+        <LayeredParallax className="business-landscape">
+          <div data-depth="0.35" className="landscape-layer landscape-back"><span>CALENDAR</span><span>CRM</span><span>PAYMENTS</span></div>
+          <div data-depth="0.8" className="landscape-layer landscape-mid"><span>WEBSITE</span><span>MESSAGING</span><span>SHOP</span></div>
+          <div data-depth="1.5" className="landscape-layer landscape-front"><span>CUSTOMER</span><span>INBOX</span><span>WORKFLOW</span></div>
+        </LayeredParallax>
+        <div className="story-container split-story">
+          <div><span className="cinematic-kicker">01 / TOO MANY TOOLS</span><ScrollTextReveal mode="word" className="story-title">TOO MANY TOOLS.</ScrollTextReveal></div>
+          <div className="story-copy"><p>Every business starts with one conversation and ends up with a maze of apps. HANDLE sits in the middle and keeps the operation coherent.</p><div className="mini-signal-grid"><span>MESSAGES</span><span>EMAIL</span><span>CALENDAR</span><span>CRM</span><span>ORDERS</span><span>PAYMENTS</span></div></div>
+        </div>
+      </section>
+
+      <section className="story-section message-action" data-section="message-action">
+        <div className="story-container centered-story">
+          <span className="cinematic-kicker">02 / SIGNATURE TRANSITION</span>
+          <ScrollTextReveal mode="character" className="message-word">MESSAGE</ScrollTextReveal>
+          <div className="signal-line"><span /></div>
+          <ScrollTextReveal mode="character" className="action-word">ACTION</ScrollTextReveal>
+          <p>HANDLE turns incoming business activity into deliberate movement.</p>
+        </div>
+      </section>
+
+      <section id="how" className="story-section zoom-story" data-section="how">
+        <StickyStage height="280vh">
+          <div className="sticky-stage-inner">
+            <div className="stage-copy"><span className="cinematic-kicker">03 / HOW HANDLE WORKS</span><h2>FROM MESSAGE<br /><em>TO RESULT.</em></h2><p>One system stays centered while the operating layer transforms around it.</p></div>
+            <ScrollZoom className="zoom-object"><div className="handle-core">HANDLE<span>CONTEXT ENGINE</span></div><div className="core-orbit orbit-1" /><div className="core-orbit orbit-2" /></ScrollZoom>
+            <div className="sticky-stage-steps">{workflow.map(([number, title, text]) => <article key={number} data-sticky-item><span>{number}</span><b>{title}</b><p>{text}</p></article>)}</div>
+          </div>
+        </StickyStage>
+      </section>
+
+      <section className="story-section media-story" data-section="media">
+        <div className="story-container media-layout">
+          <div className="media-copy"><span className="cinematic-kicker">04 / SCROLL MEDIA</span><h2>THE CUSTOMER<br /><em>GETS A RESULT.</em></h2><p>Media transitions from message to calendar to confirmation as scroll progress advances.</p></div>
+          <ScrollZoom className="media-frame"><div className="media-frame-grid" /><div className="media-thread"><span>NEW MESSAGE</span><b>“Can I book Friday at 4?”</b><small>HANDLE / intent detected</small></div><div className="media-action">CALENDAR · FRIDAY · 4:00 PM <strong>CONFIRMED</strong></div></ScrollZoom>
+        </div>
+      </section>
+
+      <ScrollTicker className="ticker-section"><div data-ticker-track className="ticker-track">HANDLE · CUSTOMERS · CONVERSATIONS · KNOWLEDGE · WORKFLOWS · CALENDAR · CRM · COMMERCE · PAYMENTS · HANDLE · </div></ScrollTicker>
+
+      <section id="connections" className="story-section integrations-story" data-section="connections">
+        <div className="story-container integrations-layout">
+          <div><span className="cinematic-kicker">06 / CONNECTION LAYER</span><h2>ONE HANDLE.<br /><em>MANY SYSTEMS.</em></h2><p>Rotate through the stack and bring each connector into the active focus.</p></div>
+          <ScrollRotation className="integration-orbit">
+            <div className="integration-core">HANDLE<span>CONNECTED</span></div>
+            {integrations.map((tool, index) => <div className={`integration-token token-${index}`} key={tool}>{tool}</div>)}
+          </ScrollRotation>
+        </div>
+      </section>
+
+      <section className="story-section spiral-story" data-section="workflow">
+        <div className="story-container">
+          <span className="cinematic-kicker">07 / WORKFLOW SPIRAL</span>
+          <h2 className="section-mega-title">A BUSINESS<br /><em>IN MOTION.</em></h2>
+          <SpiralScroll className="spiral-stage">
+            {spiralItems.map((item, index) => <article data-spiral-item key={item} className="spiral-card"><span>0{index + 1}</span><b>{item}</b><small>HANDLE EVENT</small></article>)}
+          </SpiralScroll>
+        </div>
+      </section>
+
+      <HorizontalScroll className="horizontal-showcase" travel={-76}>
+        <div data-horizontal-track className="horizontal-track">
+          {['CONNECT', 'UNDERSTAND', 'ACT', 'FOLLOW UP', 'ANALYZE'].map((label, index) => <article key={label} className="horizontal-panel"><span>0{index + 1}</span><b>{label}</b><p>{workflow[index % workflow.length][2]}</p><div className="panel-scan" /></article>)}
+        </div>
+      </HorizontalScroll>
+
+      <section className="story-section trust-story" data-section="trust">
+        <div className="story-container trust-layout"><div><span className="cinematic-kicker">09 / HUMAN HANDOFF</span><h2>MOTION<br /><em>SLOWS.</em></h2></div><div className="human-panel"><div className="human-pulse" /><span>HUMAN ACTIVE</span><p>When an important moment needs a person, HANDLE makes that handoff calm, explicit and auditable.</p></div></div>
+      </section>
+
+      <section className="story-section product-story" data-section="product">
+        <div className="story-container"><span className="cinematic-kicker">10 / PRODUCT</span><h2>THE ABSTRACT<br /><em>BECOMES REAL.</em></h2><SceneTransition className="product-window"><div className="product-sidebar"><b>HANDLE</b><span>Overview</span><span>Inbox</span><span>Knowledge</span><span>Workflows</span><span>Connections</span><span>Analytics</span></div><div className="product-main"><div className="product-topline">TODAY · 14 ACTIVE FLOWS <i /></div><div className="dashboard-grid"><div className="dash-card large"><small>INBOX</small><strong>24</strong><span>customer threads</span></div><div className="dash-card"><small>RUNS</small><strong>84</strong><span>automations</span></div><div className="dash-card"><small>TIME</small><strong>18.4h</strong><span>saved this week</span></div><div className="dash-card workflow-preview"><small>LIVE WORKFLOW</small><div><span>MESSAGE</span><i /> <span>DECIDE</span><i /> <span>ACT</span></div></div></div></div></SceneTransition></div>
+      </section>
+
+      <section className="story-section demo-story" data-section="demo">
+        <div className="story-container demo-layout"><div><span className="cinematic-kicker">11 / TRY HANDLE</span><h2>SHOW ME<br /><em>WHAT IT CAN DO.</em></h2><p>Sandbox simulation. No API required.</p></div><DemoPanel /></div>
+      </section>
+
+      <section id="pricing" className="story-section pricing-story" data-section="pricing">
+        <div className="story-container"><span className="cinematic-kicker">12 / PRICING</span><h2>START SMALL.<br /><em>HANDLE MORE.</em></h2><div className="price-grid">{[['STARTER','$9','One business'],['GROWTH','$29','Growing operations'],['PRO','$79','Scale and control']].map(([name, price, copy], index) => <article key={name} className={index === 1 ? 'price-card featured' : 'price-card'}><span>{name}</span><strong>{price}<small>/mo</small></strong><p>{copy}</p><div>✓ Inbox<br />✓ Knowledge<br />✓ Workflows<br />✓ Human handoff</div><Link href="/signup">START FREE ↗</Link></article>)}</div></div>
+      </section>
+
+      <section className="final-section" data-section="final"><div className="final-particles" /><div className="final-content"><span className="cinematic-kicker">13 / HANDLE</span><h2>WE <em>HANDLE</em> IT.</h2><p>Your business has better things to do.</p><div><MagneticCTA href="/signup">START FREE ↗</MagneticCTA><MagneticCTA href="/login" secondary>TRY HANDLE →</MagneticCTA></div></div></section>
+      <footer className="cinematic-footer"><span>HANDLE © 2026</span><span>WORK IN MOTION.</span><Link href="/login">LOG IN →</Link></footer>
+    </main>
+  );
+}
+
+function DemoPanel() {
+  return (
+    <div className="demo-panel" role="group" aria-label="HANDLE demo conversation">
+      <div className="demo-head"><span>TRY HANDLE</span><i>SIMULATED</i></div>
+      <div className="demo-chat"><div className="demo-user">Can I book Friday at 4?</div><div className="demo-system">Checking calendar…<br /><b>Friday · 4:00 PM</b> is available.</div><div className="demo-action">Booked. Confirmation sent to customer.</div></div>
+      <div className="demo-input"><span>Type a business request</span><button type="button">↗</button></div>
+    </div>
+  );
+}
+
+export default CinematicMarketing;
