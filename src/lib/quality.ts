@@ -27,6 +27,21 @@ export function setManualQuality(tier: QualityTier | null) {
   else window.localStorage.removeItem('handle-quality');
 }
 
+function getWebGLRenderer(): string {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') as WebGLRenderingContext | null;
+    if (!gl) return '';
+
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    if (!ext) return '';
+
+    return String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) ?? '').toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
 export async function detectQuality(reducedMotion: boolean): Promise<QualityTier> {
   if (reducedMotion) return 'low';
   const manual = getManualQuality();
@@ -36,16 +51,7 @@ export async function detectQuality(reducedMotion: boolean): Promise<QualityTier
   const memory = nav.deviceMemory ?? 4;
   const cores = nav.hardwareConcurrency ?? 4;
   const dpr = Math.min(3, window.devicePixelRatio || 1);
-
-  let renderer = '';
-  try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    const ext = gl?.getExtension('WEBGL_debug_renderer_info');
-    renderer = String(ext && gl ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : '').toLowerCase();
-  } catch {
-    renderer = '';
-  }
+  const renderer = getWebGLRenderer();
 
   const lowGpu = /intel\s+hd|uhd|mali-4|adreno\s+[3-5]|powervr|swiftshader|llvmpipe/.test(renderer);
   const gpuScore = lowGpu ? -2 : renderer ? 1 : 0;
