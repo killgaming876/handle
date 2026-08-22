@@ -14,8 +14,9 @@ function ParticleField() {
   const count = quality === 'ultra' ? 1400 : quality === 'high' ? 900 : quality === 'medium' ? 500 : quality === 'low' ? 220 : 0;
 
   const geometry = useMemo(() => {
-    const positions = new Float32Array(Math.max(1, count) * 3);
-    const seeds = new Float32Array(Math.max(1, count));
+    const safeCount = Math.max(1, count);
+    const positions = new Float32Array(safeCount * 3);
+    const seeds = new Float32Array(safeCount);
     for (let i = 0; i < count; i += 1) {
       const radius = Math.pow(Math.random(), 0.65) * 18;
       const angle = Math.random() * Math.PI * 2;
@@ -53,14 +54,41 @@ function ParticleField() {
       <bufferAttribute attach="attributes-position" args={[geometry.positions, 3]} />
       <bufferAttribute attach="attributes-aSeed" args={[geometry.seeds, 1]} />
     </bufferGeometry>
-    <shaderMaterial ref={material} uniforms={uniforms} transparent depthWrite={false} blending={AdditiveBlending}>
-      <shaderMaterial vertexShader={`
-        uniform float uTime; uniform float uVelocity; uniform float uProgress; attribute float aSeed; varying float vEnergy;
-        void main(){ vec3 p=position; float wave=sin(uTime*(0.22+aSeed*0.4)+aSeed*18.0); p.x+=wave*0.16*(0.5+uVelocity*1.8); p.y+=cos(uTime*0.17+aSeed*14.0)*0.1; p.z+=sin(uProgress*5.0+aSeed*12.0)*0.75; vec4 mv=modelViewMatrix*vec4(p,1.0); gl_PointSize=(1.8+aSeed*2.2)*(1.0+uVelocity*1.6)*(50.0/max(8.0,-mv.z)); gl_Position=projectionMatrix*mv; vEnergy=0.35+0.65*abs(sin(aSeed*13.0+uTime*0.32)); }
-      `} fragmentShader={`
-        varying float vEnergy; void main(){ vec2 uv=gl_PointCoord-0.5; float d=length(uv); float alpha=smoothstep(0.5,0.05,d)*vEnergy; vec3 color=mix(vec3(0.78,0.9,0.3),vec3(0.2,0.7,0.52),gl_FragCoord.x/max(1.0,gl_FragCoord.x+gl_FragCoord.y)); gl_FragColor=vec4(color,alpha*0.65); }
-      `} />
-    </shaderMaterial>
+    <shaderMaterial
+      ref={material}
+      uniforms={uniforms}
+      transparent
+      depthWrite={false}
+      blending={AdditiveBlending}
+      vertexShader={`
+        uniform float uTime;
+        uniform float uVelocity;
+        uniform float uProgress;
+        attribute float aSeed;
+        varying float vEnergy;
+        void main(){
+          vec3 p=position;
+          float wave=sin(uTime*(0.22+aSeed*0.4)+aSeed*18.0);
+          p.x+=wave*0.16*(0.5+uVelocity*1.8);
+          p.y+=cos(uTime*0.17+aSeed*14.0)*0.1;
+          p.z+=sin(uProgress*5.0+aSeed*12.0)*0.75;
+          vec4 mv=modelViewMatrix*vec4(p,1.0);
+          gl_PointSize=(1.8+aSeed*2.2)*(1.0+uVelocity*1.6)*(50.0/max(8.0,-mv.z));
+          gl_Position=projectionMatrix*mv;
+          vEnergy=0.35+0.65*abs(sin(aSeed*13.0+uTime*0.32));
+        }
+      `}
+      fragmentShader={`
+        varying float vEnergy;
+        void main(){
+          vec2 uv=gl_PointCoord-0.5;
+          float d=length(uv);
+          float alpha=smoothstep(0.5,0.05,d)*vEnergy;
+          vec3 color=mix(vec3(0.78,0.9,0.3),vec3(0.2,0.7,0.52),gl_FragCoord.x/max(1.0,gl_FragCoord.x+gl_FragCoord.y));
+          gl_FragColor=vec4(color,alpha*0.65);
+        }
+      `}
+    />
   </points>;
 }
 
