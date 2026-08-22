@@ -1,3 +1,3 @@
 'use client';
 
-export { default as Marketing } from '@/components/CinematicMarketing';
+export { default as Marketing } from '@/components/CinematicMarketingV2';
