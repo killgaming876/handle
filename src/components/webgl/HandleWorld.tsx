@@ -10,8 +10,8 @@ import { useMotionStore } from '@/stores/motionStore';
 function ParticleField() {
   const points = useRef<Points>(null);
   const material = useRef<ShaderMaterial>(null);
-  const { quality, normalizedVelocity, scrollProgress, pointerX, pointerY } = useMotionStore();
-  const count = quality === 'ultra' ? 1400 : quality === 'high' ? 900 : quality === 'medium' ? 500 : quality === 'low' ? 220 : 0;
+  const quality = useMotionStore((state) => state.quality);
+  const count = quality === 'ultra' ? 900 : quality === 'high' ? 500 : quality === 'medium' ? 220 : quality === 'low' ? 90 : 0;
 
   const geometry = useMemo(() => {
     const safeCount = Math.max(1, count);
@@ -38,6 +38,7 @@ function ParticleField() {
 
   useFrame((_, delta) => {
     if (!points.current || !material.current || count === 0) return;
+    const { normalizedVelocity, scrollProgress, pointerX, pointerY } = useMotionStore.getState();
     material.current.uniforms.uTime.value += delta;
     material.current.uniforms.uVelocity.value = MathUtils.damp(material.current.uniforms.uVelocity.value, normalizedVelocity, 6, delta);
     material.current.uniforms.uProgress.value = MathUtils.damp(material.current.uniforms.uProgress.value, scrollProgress, 4, delta);
@@ -94,8 +95,8 @@ function ParticleField() {
 
 function CameraRig() {
   const { camera } = useThree();
-  const { pointerX, pointerY, normalizedVelocity } = useMotionStore();
   useFrame((_, delta) => {
+    const { pointerX, pointerY, normalizedVelocity } = useMotionStore.getState();
     camera.position.x = MathUtils.damp(camera.position.x, (pointerX - 0.5) * 0.55, 4, delta);
     camera.position.y = MathUtils.damp(camera.position.y, (0.5 - pointerY) * 0.35, 4, delta);
     camera.position.z = MathUtils.damp(camera.position.z, 6.8 - normalizedVelocity * 0.55, 4, delta);
@@ -106,8 +107,8 @@ function CameraRig() {
 
 export default function HandleWorld() {
   const quality = useMotionStore((state) => state.quality);
-  const dpr = quality === 'ultra' ? [1, 1.5] as [number, number] : quality === 'high' ? [1, 1.3] as [number, number] : quality === 'medium' ? [0.85, 1.1] as [number, number] : [0.7, 0.9] as [number, number];
-  const post = quality === 'ultra' || quality === 'high';
+  const dpr = quality === 'ultra' ? [1, 1.35] as [number, number] : quality === 'high' ? [1, 1.15] as [number, number] : quality === 'medium' ? [0.8, 1] as [number, number] : [0.65, 0.85] as [number, number];
+  const post = quality === 'ultra';
 
   return <div className="handle-world" aria-hidden="true">
     <Canvas dpr={dpr} camera={{ position: [0, 0, 6.8], fov: 45 }} gl={{ antialias: quality === 'ultra', powerPreference: 'high-performance', alpha: true }}>
@@ -115,9 +116,9 @@ export default function HandleWorld() {
       <CameraRig />
       <ParticleField />
       {post && <EffectComposer multisampling={0}>
-        <Bloom luminanceThreshold={0.4} intensity={quality === 'ultra' ? 0.48 : 0.32} mipmapBlur />
-        <Noise opacity={0.028} />
-        <Vignette eskil={false} offset={0.22} darkness={0.55} />
+        <Bloom luminanceThreshold={0.5} intensity={0.28} mipmapBlur />
+        <Noise opacity={0.018} />
+        <Vignette eskil={false} offset={0.22} darkness={0.45} />
       </EffectComposer>}
     </Canvas>
   </div>;
