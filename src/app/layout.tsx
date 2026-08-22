@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import UltraEffects from '@/components/UltraEffects';
+import AdaptiveQualityRuntime from '@/components/AdaptiveQualityRuntime';
 
 export const metadata: Metadata = {
   title: 'HANDLE — We Handle It.',
@@ -11,6 +12,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
+        <AdaptiveQualityRuntime />
         <UltraEffects />
         {children}
       </body>
