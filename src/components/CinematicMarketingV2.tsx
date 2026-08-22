@@ -17,16 +17,17 @@ function DeferredWorld() {
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     const activate = () => setReady(true);
+    const browserWindow = window as Window & {
+      requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
 
-    if ('requestIdleCallback' in window) {
-      const idle = (window as Window & {
-        requestIdleCallback: (cb: () => void, options?: { timeout: number }) => number;
-        cancelIdleCallback?: (id: number) => void;
-      }).requestIdleCallback(activate, { timeout: 700 });
-      cleanup = () => (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(idle);
+    if (typeof browserWindow.requestIdleCallback === 'function') {
+      const idle = browserWindow.requestIdleCallback(activate, { timeout: 700 });
+      cleanup = () => browserWindow.cancelIdleCallback?.(idle);
     } else {
-      const timer = window.setTimeout(activate, 180);
-      cleanup = () => window.clearTimeout(timer);
+      const timer = setTimeout(activate, 180);
+      cleanup = () => clearTimeout(timer);
     }
 
     return () => cleanup?.();
