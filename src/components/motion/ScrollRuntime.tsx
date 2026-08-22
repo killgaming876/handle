@@ -5,31 +5,29 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { useMotionStore } from '@/stores/motionStore';
+import { detectQuality } from '@/lib/quality';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ScrollRuntime() {
   useEffect(() => {
+    let destroyed = false;
     const motion = useMotionStore.getState();
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
-    const cores = navigator.hardwareConcurrency ?? 8;
-    const coarse = window.matchMedia('(pointer: coarse)').matches;
-    const quality = reduce || memory <= 4 || cores <= 4 ? 'medium' : coarse ? 'high' : memory >= 12 && cores >= 8 ? 'ultra' : 'high';
-    motion.setQuality(quality);
 
-    const lenis = new Lenis({
-      duration: reduce ? 0.01 : 1.05,
-      smoothWheel: !reduce,
-      syncTouch: true,
-      touchMultiplier: 0.85,
-      wheelMultiplier: 0.85,
+    detectQuality(reduce).then((quality) => {
+      if (!destroyed) motion.setQuality(quality);
     });
 
-    let lastScroll = lenis.scroll;
-    let lastTime = performance.now();
-    const triggers: ScrollTrigger[] = [];
+    const lenis = new Lenis({
+      duration: reduce ? 0.01 : 0.72,
+      smoothWheel: !reduce,
+      syncTouch: false,
+      touchMultiplier: 0.9,
+      wheelMultiplier: 0.92,
+    });
 
+    const triggers: ScrollTrigger[] = [];
     const onScroll = ({ scroll, velocity, direction }: { scroll: number; limit: number; velocity: number; direction: number }) => {
       const nextDirection = Math.abs(velocity) < 0.015 ? 'idle' : direction >= 0 ? 'down' : 'up';
       const progress = Math.max(0, Math.min(1, scroll / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)));
@@ -37,7 +35,6 @@ export default function ScrollRuntime() {
       document.documentElement.style.setProperty('--scroll-progress', progress.toFixed(5));
       document.documentElement.style.setProperty('--scroll-velocity', Math.min(1, Math.abs(velocity) / 2.2).toFixed(5));
       document.documentElement.style.setProperty('--scroll-direction', nextDirection);
-      lastScroll = scroll;
     };
 
     const onPointerMove = (event: PointerEvent) => {
@@ -48,45 +45,32 @@ export default function ScrollRuntime() {
     window.addEventListener('pointermove', onPointerMove, { passive: true });
 
     const ticker = (time: number) => {
-      const delta = Math.max(0, time - lastTime);
-      lastTime = time;
       lenis.raf(time * 1000);
       ScrollTrigger.update();
-
-      if (delta > 48) {
-        const velocity = (lenis.scroll - lastScroll) / Math.max(0.016, delta / 1000);
-        const progress = Math.max(0, Math.min(1, lenis.scroll / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)));
-        motion.setScroll(progress, velocity, velocity >= 0 ? 'down' : 'up');
-        document.documentElement.style.setProperty('--scroll-progress', progress.toFixed(5));
-        document.documentElement.style.setProperty('--scroll-velocity', Math.min(1, Math.abs(velocity) / 2.2).toFixed(5));
-      }
     };
-
     gsap.ticker.add(ticker);
-    gsap.ticker.lagSmoothing(1000, 16);
+    gsap.ticker.lagSmoothing(500, 16);
 
-    const sectionNodes = gsap.utils.toArray<HTMLElement>('[data-section]');
-    sectionNodes.forEach((section) => {
+    gsap.utils.toArray<HTMLElement>('[data-section]').forEach((section) => {
       const name = section.dataset.section ?? 'unknown';
-      const trigger = ScrollTrigger.create({
+      triggers.push(ScrollTrigger.create({
         trigger: section,
-        start: 'top 68%',
-        end: 'bottom 32%',
+        start: 'top 72%',
+        end: 'bottom 28%',
         onEnter: (self) => motion.setSection(name, self.progress),
         onEnterBack: (self) => motion.setSection(name, self.progress),
         onUpdate: (self) => motion.setSection(name, self.progress),
-      });
-      triggers.push(trigger);
+      }));
     });
 
     const refresh = () => ScrollTrigger.refresh();
     window.addEventListener('resize', refresh, { passive: true });
     window.addEventListener('orientationchange', refresh, { passive: true });
-
-    const idleRefresh = window.setTimeout(refresh, 500);
+    const refreshTimer = window.setTimeout(refresh, 250);
 
     return () => {
-      window.clearTimeout(idleRefresh);
+      destroyed = true;
+      window.clearTimeout(refreshTimer);
       triggers.forEach((trigger) => trigger.kill());
       gsap.ticker.remove(ticker);
       window.removeEventListener('pointermove', onPointerMove);
