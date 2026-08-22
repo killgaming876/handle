@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 
 type Direction = 'up' | 'down' | 'idle';
+type Quality = 'ultra' | 'high' | 'medium' | 'low' | 'fallback';
 
 type MotionState = {
   scrollProgress: number;
@@ -13,11 +14,11 @@ type MotionState = {
   sectionProgress: number;
   pointerX: number;
   pointerY: number;
-  quality: 'ultra' | 'high' | 'medium' | 'low';
+  quality: Quality;
   setScroll: (scrollProgress: number, scrollVelocity: number, direction: Direction) => void;
   setSection: (activeSection: string, sectionProgress: number) => void;
   setPointer: (pointerX: number, pointerY: number) => void;
-  setQuality: (quality: MotionState['quality']) => void;
+  setQuality: (quality: Quality) => void;
 };
 
 export const useMotionStore = create<MotionState>((set) => ({
