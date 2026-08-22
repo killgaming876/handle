@@ -1,2 +1,6 @@
-import { SettingsPage } from '@/components/DashboardPages';
-export default function Page(){ return <SettingsPage/>; }
+import { DashboardShell } from '@/components/DashboardShell';
+import { QualitySettings } from '@/components/QualitySettings';
+
+export default function Page() {
+  return <DashboardShell active="Settings"><QualitySettings /></DashboardShell>;
+}
