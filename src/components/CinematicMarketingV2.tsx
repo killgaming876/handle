@@ -85,3 +85,42 @@ export default function CinematicMarketingV2() {
       </div>
       <p className="hx-lead">HANDLE sits between the customer and the tools, turning scattered activity into one coherent operating flow.</p>
     </section>
+
+    <section className="hx-section hx-signature" data-section="signature">
+      <StickyStage height="240vh"><div className="hx-sticky">
+        <div className="hx-chat"><small>NEW CUSTOMER MESSAGE</small><strong>“Can I book Friday at 4?”</strong><div className="hx-chat-line" /><span>HANDLE understands intent</span></div>
+        <div className="hx-route"><span>MESSAGE</span><i /><span>CALENDAR</span><i /><span>CONFIRMED</span></div>
+        <div className="hx-result"><small>RESULT</small><strong>FRIDAY · 4:00 PM</strong><span>Confirmation sent.</span></div>
+      </div></StickyStage>
+    </section>
+
+    <section id="workflow" className="hx-section hx-workflow" data-section="workflow">
+      <div className="hx-section-head"><span>03 / WORKFLOW ENGINE</span><h2>A BUSINESS<br /><em>IN MOTION.</em></h2></div>
+      <SpiralScroll className="hx-spiral">{workflow.map((step, i) => <article key={step} data-spiral-item className="hx-work-card"><small>0{i + 1}</small><strong>{step}</strong><span>HANDLE EVENT</span></article>)}</SpiralScroll>
+    </section>
+
+    <HorizontalScroll className="hx-horizontal" travel={-72}>
+      <div data-horizontal-track className="hx-horizontal-track">{signals.map((signal, i) => <article key={signal} className="hx-h-card"><small>0{i + 1}</small><strong>{signal}</strong><p>Connected context. Shared state. One operating layer.</p><div className="hx-scan" /></article>)}</div>
+    </HorizontalScroll>
+
+    <section id="connections" className="hx-section hx-product" data-section="product">
+      <div className="hx-section-head"><span>05 / ACTUAL PRODUCT</span><h2>THE ABSTRACT<br /><em>BECOMES REAL.</em></h2></div>
+      <div className="hx-app-window">
+        <aside><b>HANDLE</b><span className="active">Overview</span><span>Inbox</span><span>Knowledge</span><span>Workflows</span><span>Connections</span><span>Analytics</span></aside>
+        <div className="hx-app-main"><div className="hx-app-bar"><span>WORKSPACE / OVERVIEW</span><i>HANDLE ONLINE</i></div><div className="hx-metrics">{[['1,842','CONVERSATIONS'],['87%','AUTO-RESOLVED'],['32h','TIME SAVED'],['214','LEADS']].map(([n,l]) => <div key={l}><strong>{n}</strong><span>{l}</span></div>)}</div><div className="hx-live-card"><small>LIVE WORKFLOW</small><div>{workflow.map((s, i) => <span key={s}><b>{s}</b>{i < workflow.length - 1 && <i />}</span>)}</div></div></div>
+      </div>
+    </section>
+
+    <section id="pricing" className="hx-section hx-pricing" data-section="pricing">
+      <div className="hx-section-head"><span>06 / PRICING</span><h2>START SMALL.<br /><em>HANDLE MORE.</em></h2></div>
+      <div className="hx-price-grid">{[['STARTER','$9'],['GROWTH','$29'],['PRO','$79']].map(([name, price], i) => <article key={name} className={i === 1 ? 'featured' : ''}><span>{name}</span><strong>{price}<small>/mo</small></strong><p>Inbox · Knowledge · Workflows · Human handoff</p><Link href="/signup">START FREE ↗</Link></article>)}</div>
+    </section>
+
+    <section className="hx-final" data-section="final">
+      <motion.div className="hx-final-inner" initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.8, ease: [0.16,1,0.3,1] }}>
+        <span>HANDLE / READY</span><h2>WE <em>HANDLE</em> IT.</h2><p>Your business has better things to do.</p><div className="hx-actions"><MagneticLink href="/signup">START FREE ↗</MagneticLink><MagneticLink href="/login">LOG IN →</MagneticLink></div>
+      </motion.div>
+    </section>
+    <footer className="hx-footer"><span>HANDLE © 2026</span><span>FAST BY DEFAULT. CINEMATIC BY CHOICE.</span><Link href="/security">SECURITY</Link></footer>
+  </main>;
+}
